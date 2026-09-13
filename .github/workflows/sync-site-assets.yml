@@ -1,0 +1,37 @@
+name: Sync site from Vercel
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync deployed site assets
+        run: |
+          set -e
+          BASE="https://hamel-bros-landscaping-yoel-laya-projects.vercel.app"
+          curl -fsSL "$BASE/index.html" -o index.html
+          curl -fsSL "$BASE/about.html" -o about.html
+          curl -fsSL "$BASE/services.html" -o services.html
+          curl -fsSL "$BASE/gallery.html" -o gallery.html
+          curl -fsSL "$BASE/contact.html" -o contact.html
+          mkdir -p css js inspirationresources
+          curl -fsSL "$BASE/css/styles.css" -o css/styles.css
+          curl -fsSL "$BASE/js/main.js" -o js/main.js
+          curl -fsSL "$BASE/hamelBros.LandscapingLogo.png" -o hamelBros.LandscapingLogo.png
+          curl -fsSL "$BASE/inspirationresources/image1.jpeg" -o inspirationresources/image1.jpeg
+          curl -fsSL "$BASE/inspirationresources/image2.jpeg" -o inspirationresources/image2.jpeg
+          curl -fsSL "$BASE/inspirationresources/image3.jpeg" -o inspirationresources/image3.jpeg
+          rm -f README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "sync: import Hamel Bros site from Vercel"
+          git push
