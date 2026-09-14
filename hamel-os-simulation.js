@@ -115,20 +115,21 @@
     lucidePromise=new Promise((resolve,reject)=>{
       const existing=document.getElementById('hamel-lucide-js');
       if(existing){if(global.lucide)resolve(global.lucide);else{existing.addEventListener('load',()=>resolve(global.lucide),{once:true});existing.addEventListener('error',reject,{once:true})}return}
-      const js=document.createElement('script');js.id='hamel-lucide-js';js.src='https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js';js.onload=()=>global.lucide?resolve(global.lucide):reject(new Error('Lucide unavailable'));js.onerror=reject;document.head.appendChild(js);
+      const js=document.createElement('script');js.id='hamel-lucide-js';js.src='https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js';js.onload=()=>global.lucide?resolve(global.lucide):reject(new Error('Lucide unavailable'));js.onerror=reject;document.head.appendChild(js);
     });return lucidePromise;
   }
   function mapStyles(){
     if(document.getElementById('hamel-leaflet-style'))return;
     const s=document.createElement('style');s.id='hamel-leaflet-style';s.textContent=`
-      .hamel-leaflet-host{position:absolute;inset:0;z-index:2;overflow:hidden;border-radius:13px;background:#0d110d;touch-action:pan-y}
+      .hamel-leaflet-host{position:absolute;inset:0;z-index:2;overflow:hidden;border-radius:13px;background:#0d110d;touch-action:none;cursor:grab}
+      .hamel-leaflet-host:active{cursor:grabbing}
       .hamel-leaflet-host .leaflet-tile-pane{filter:brightness(.58) saturate(.72) contrast(1.08)}
       .hamel-leaflet-host .leaflet-control-zoom{margin:12px!important;border:1px solid #263026!important;box-shadow:0 8px 22px rgba(0,0,0,.4)!important}
       .hamel-leaflet-host .leaflet-control-zoom a{background:#101510!important;color:#a8ff78!important;border-bottom-color:#263026!important}
       .hamel-leaflet-host .leaflet-control-attribution{background:rgba(9,13,9,.82)!important;color:#aeb6ae!important;font-size:9px!important}
       .hamel-leaflet-host .leaflet-control-attribution a{color:#a8ff78!important}
       .hamel-truck-icon{width:52px;height:36px;position:relative;filter:drop-shadow(0 5px 8px rgba(0,0,0,.6));display:grid;place-items:center}
-      .hamel-truck-icon svg{width:32px;height:32px;display:block;stroke:#071007;stroke-width:2.4;transform-origin:50% 50%;transition:transform .25s linear;fill:#a8ff78}
+      .hamel-truck-icon svg{width:32px;height:32px;display:block;fill:none!important;stroke:#a8ff78!important;stroke-width:2.4;transform-origin:50% 50%;transition:transform .25s linear}
       .hamel-truck-tag{position:absolute;left:28px;top:-8px;padding:2px 5px;border:1px solid #263026;border-radius:5px;background:#0b100b;color:#dfffd0;font:700 8px/1.1 ui-monospace,monospace;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.45);z-index:2}
       .hamel-truck-dot{position:absolute;left:3px;top:5px;width:7px;height:7px;border-radius:50%;background:#a8ff78;box-shadow:0 0 9px rgba(168,255,120,.8);z-index:2}
       .hamel-truck-working .hamel-truck-dot{background:#60a5fa;box-shadow:0 0 9px rgba(96,165,250,.75)}
@@ -143,7 +144,7 @@
   function routePoint(points,p){if(!points||points.length<2)return points&&points[0];const t=Math.max(0,Math.min(1,p));const scaled=t*(points.length-1),i=Math.min(points.length-2,Math.floor(scaled)),f=scaled-i;const a=points[i],b=points[i+1];return[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f]}
   async function fetchRoute(from,to){const key=from.map(v=>v.toFixed(5)).join(',')+'>'+to.map(v=>v.toFixed(5)).join(',');if(routeCache.has(key))return routeCache.get(key);const url='https://router.project-osrm.org/route/v1/driving/'+from[1]+','+from[0]+';'+to[1]+','+to[0]+'?overview=full&geometries=geojson';try{const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error('route '+r.status);const data=await r.json();const pts=data&&data.routes&&data.routes[0]&&data.routes[0].geometry&&data.routes[0].geometry.coordinates;if(!pts||pts.length<2)throw new Error('no route');const latlng=pts.map(p=>[p[1],p[0]]);routeCache.set(key,latlng);return latlng}catch(_){const fallback=[from,to];routeCache.set(key,fallback);return fallback}}
   function iconFor(c,rotation){const cls=c.status==='WORKING'?'hamel-truck-working':c.status==='SCHEDULED'?'hamel-truck-scheduled':'';return global.L.divIcon({className:'',html:`<div class="hamel-truck-icon ${cls}"><span class="hamel-truck-tag">${c.name.replace('Crew ','')}</span><span class="hamel-truck-dot"></span><i data-lucide="truck" aria-hidden="true" style="transform:rotate(${rotation}deg)"></i></div>`,iconSize:[52,36],iconAnchor:[26,18],popupAnchor:[0,-18]})}
-  function hydrateIcon(iconElement){if(global.lucide&&typeof global.lucide.createIcons==='function'&&iconElement){global.lucide.createIcons({root:iconElement,icons:{truck:global.lucide.icons.Truck}})}}
+  function hydrateIcon(iconElement){if(global.lucide&&typeof global.lucide.createIcons==='function'&&iconElement){global.lucide.createIcons({root:iconElement,icons:{Truck:global.lucide.icons.Truck}})}}
   function setMarkerIcon(L,marker,c,rotation){const icon=iconFor(c,rotation);marker.setIcon(icon);requestAnimationFrame(()=>{const el=marker.getElement();if(el)hydrateIcon(el)})}
   function popupFor(c,j){return `<div class="hamel-map-popup"><b>${c.name}</b><br><small>${c.vehicleId} · ${c.leader}</small><div class="fleet-status">${c.status.replaceAll('_',' ')}${j?' · '+Math.round(j.progress)+'%':''}</div>${j?'<div>'+j.property+'</div><small>'+j.address+'</small>':''}</div>`}
   function setupMap(mapCard){
@@ -151,10 +152,9 @@
     mapCard.dataset.hamelLeaflet='loading';mapStyles();
     const host=document.createElement('div');host.className='hamel-leaflet-host';host.setAttribute('aria-label','Live fleet map');mapCard.style.position='relative';
     mapCard.appendChild(host);
-    Promise.all([loadLeaflet(),loadLucide()]).then(([L])=>{
+    Promise.all([loadLeaflet(),loadLucide().catch(()=>null)]).then(([L])=>{
       if(!host.isConnected)return;
-      const mobile=window.matchMedia&&window.matchMedia('(max-width:900px)').matches;
-      const map=L.map(host,{zoomControl:true,attributionControl:true,scrollWheelZoom:false,dragging:!mobile,tap:true,touchZoom:!mobile,doubleClickZoom:!mobile,boxZoom:!mobile,preferCanvas:true}).setView(MAP_CENTER,12);
+      const map=L.map(host,{zoomControl:true,attributionControl:true,scrollWheelZoom:true,dragging:true,tap:true,touchZoom:true,doubleClickZoom:true,boxZoom:true,preferCanvas:true}).setView(MAP_CENTER,12);
       mapCard.dataset.hamelLeaflet='1';global.HamelFleetMap=map;
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',updateWhenIdle:true,keepBuffer:1}).addTo(map);
       const sync=data=>{
@@ -171,7 +171,6 @@
       };
       function drawRoute(L,map,c,points){let line=routeLayers.get(c.id);if(line)map.removeLayer(line);line=L.polyline(points,{className:'hamel-route',color:c.status==='WORKING'?'#60a5fa':'#a8ff78',weight:4,opacity:.78,dashArray:'7 7',lineCap:'round'}).addTo(map);routeLayers.set(c.id,line)}
       global.HamelSimulation.subscribe(sync);
-      host.addEventListener('wheel',e=>{if(e.ctrlKey)return;e.stopImmediatePropagation()},{capture:true,passive:true});
       window.addEventListener('resize',()=>map.invalidateSize({pan:false}),{passive:true});
     }).catch(()=>{mapCard.dataset.hamelLeaflet='error';host.remove()})
   }
