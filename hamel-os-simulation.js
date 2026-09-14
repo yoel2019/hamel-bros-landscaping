@@ -7,6 +7,39 @@
   const STORAGE_KEY = 'hamel-os:simulation:v3';
   const now = () => new Date().toISOString();
   const makeId = p => p + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+
+  // Keep the mobile navigation visually separated from page content.
+  // This is injected before React mounts so the app never renders a transparent nav.
+  function ensureMobileNavSurface() {
+    if (document.getElementById('hamel-os-mobile-nav-surface')) return;
+    const style = document.createElement('style');
+    style.id = 'hamel-os-mobile-nav-surface';
+    style.textContent = `
+      @media (max-width: 900px) {
+        .mobile-nav {
+          background: #0d110d !important;
+          border-top: 1px solid #222622 !important;
+          box-shadow: 0 -14px 34px rgba(0,0,0,.58), 0 -1px 0 rgba(168,255,120,.04) !important;
+          isolation: isolate;
+        }
+        .mobile-nav > button {
+          background: #111611 !important;
+          border: 1px solid #202620 !important;
+          color: #858b85 !important;
+        }
+        .mobile-nav > button[aria-current="page"],
+        .mobile-nav > button:focus-visible {
+          outline: none;
+        }
+        .mobile-nav > button:active {
+          background: #182018 !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  ensureMobileNavSurface();
+
   const seed = {
     version: 3,
     clock: { simulated: true, startedAt: now() },
