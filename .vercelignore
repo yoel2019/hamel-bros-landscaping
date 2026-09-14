@@ -1,0 +1,12 @@
+# Keep Hamel OS and internal architecture out of the public Vercel deployment.
+admin/
+adminos.html
+hamel-os.html
+hamel-os-*.js
+hamel-os-*.css
+hamel-os-backup.txt
+hamel-os-deploy-trigger.txt
+hamel-os-domain.js
+yalh-core/
+YALH-ARCHITECTURE.md
+agenteai-instructions.md
