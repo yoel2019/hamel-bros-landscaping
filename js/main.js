@@ -4,54 +4,41 @@ function initMenu(){
   const toggle=document.querySelector('.menu-toggle'),menu=document.querySelector('.navbar__menu'),inner=document.querySelector('.navbar__inner');
   if(!toggle||!menu||!inner)return;
   menu.id=menu.id||'site-menu';
-  toggle.setAttribute('aria-controls',menu.id);
-  toggle.classList.add('menu-toggle--floating-widget');
-  toggle.setAttribute('aria-expanded','false');
-  toggle.setAttribute('aria-label','Open menu');
-
-  if(!document.getElementById('navigation-state-fixes')){
-    const style=document.createElement('style');
-    style.id='navigation-state-fixes';
-    style.textContent='.navbar__link.is-active{color:var(--lime)!important;font-weight:800!important;position:relative}.navbar__link.is-active:after{content:"";position:absolute;left:12px;right:12px;bottom:5px;height:2px;border-radius:2px;background:var(--lime)}@media(max-width:780px){.navbar__link.is-active{background:rgba(168,255,120,.08)!important;color:var(--lime)!important}.navbar__link.is-active:after{left:12px;right:auto;bottom:8px;width:28px}}';
-    document.head.appendChild(style)
-  }
-
-  const setActive=()=>{
-    const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-    menu.querySelectorAll('a[href]').forEach(link=>{
-      const raw=link.getAttribute('href')||'';
-      const target=raw.split('#')[0].split('?')[0].split('/').pop().toLowerCase()||'index.html';
-      const active=target===current;
-      link.classList.toggle('is-active',active);
-      if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')
-    })
-  };
-
-  const close=()=>{
-    menu.classList.remove('is-open');
-    toggle.setAttribute('aria-expanded','false');
-    toggle.setAttribute('aria-label','Open menu');
-    document.body.classList.remove('menu-open')
-  };
-
-  const open=()=>{
-    menu.classList.add('is-open');
-    toggle.setAttribute('aria-expanded','true');
-    toggle.setAttribute('aria-label','Close menu');
-    document.body.classList.add('menu-open')
-  };
-
-  toggle.addEventListener('click',e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    menu.classList.contains('is-open')?close():open()
-  });
-
+  toggle.setAttribute('aria-controls',menu.id);toggle.classList.add('menu-toggle--floating-widget');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');
+  if(!document.getElementById('navigation-state-fixes')){const style=document.createElement('style');style.id='navigation-state-fixes';style.textContent='.navbar__link.is-active{color:var(--lime)!important;font-weight:800!important;position:relative}.navbar__link.is-active:after{content:"";position:absolute;left:12px;right:12px;bottom:5px;height:2px;border-radius:2px;background:var(--lime)}@media(max-width:780px){.navbar__link.is-active{background:rgba(168,255,120,.08)!important;color:var(--lime)!important}.navbar__link.is-active:after{left:12px;right:auto;bottom:8px;width:28px}}';document.head.appendChild(style)}
+  const setActive=()=>{const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();menu.querySelectorAll('a[href]').forEach(link=>{const raw=link.getAttribute('href')||'';const target=raw.split('#')[0].split('?')[0].split('/').pop().toLowerCase()||'index.html';const active=target===current;link.classList.toggle('is-active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')})};
+  const close=()=>{menu.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');document.body.classList.remove('menu-open')};
+  const open=()=>{menu.classList.add('is-open');toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Close menu');document.body.classList.add('menu-open')};
+  toggle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();menu.classList.contains('is-open')?close():open()});
   menu.addEventListener('click',e=>{if(e.target.closest('a'))close()});
   document.addEventListener('click',e=>{if(menu.classList.contains('is-open')&&!menu.contains(e.target)&&!toggle.contains(e.target))close()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('is-open')){close();toggle.focus()}});
-  window.addEventListener('resize',()=>{if(window.innerWidth>1050)close()},{passive:true});
-  setActive();
+  window.addEventListener('resize',()=>{if(window.innerWidth>1050)close()},{passive:true});setActive();
+}
+
+function initViewCardStyles(){if(document.getElementById('view-card-styles'))return;const s=document.createElement('style');s.id='view-card-styles';s.textContent='.view-card{position:relative;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;outline:none}.view-card:focus-visible{border-color:var(--lime);box-shadow:0 0 0 3px rgba(168,255,120,.12)}.view-card__summary{color:var(--gray);font-size:.88rem;margin:0}.view-card__detail{max-height:0;opacity:0;overflow:hidden;color:var(--light);font-size:.84rem;line-height:1.55;transition:max-height .3s ease,opacity .25s ease,margin-top .25s ease}.view-card.is-open .view-card__detail{max-height:320px;opacity:1;margin-top:12px}.view-card__hint{display:block;margin-top:auto;padding-top:16px;color:var(--lime);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.view-card.is-open .view-card__hint{color:var(--gray)}.view-card__detail ul{margin:0;padding-left:18px}.view-card__detail li{margin:0 0 5px}.view-card__detail p{margin:0;color:inherit}.view-card__action{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:12px;min-height:38px;padding:9px 13px;border:1px solid rgba(168,255,120,.45);border-radius:8px;color:var(--lime);font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;background:rgba(168,255,120,.06);transition:background .2s ease,border-color .2s ease,transform .2s ease}.view-card__action:hover{background:rgba(168,255,120,.12);border-color:var(--lime);transform:translateY(-1px)}.service-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.service-grid .view-card{min-height:230px}.team-grid .view-card{min-height:210px}.team-grid .view-card__detail{font-size:.82rem}.team-grid .view-card__hint{padding-top:14px}@media(max-width:1050px){.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:780px){.service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.service-grid .view-card{min-height:215px;padding:20px}}@media(max-width:500px){.service-grid{grid-template-columns:1fr}.service-grid .view-card{min-height:205px}.view-card__detail{font-size:.83rem}}@media(prefers-reduced-motion:reduce){.view-card__detail,.view-card__action{transition:none}}';document.head.appendChild(s)}
+
+function initViewCards(){
+  const serviceDetails={'Maintenance':'Spring & fall cleanups; edging & mulching; weeding; lawn care; fertilizing; lawn renovations; new lawn installations; aeration; de-thatching; seeding; trimming of trees and shrubs.','Planting & design':'Installation of trees, shrubs and perennials, plus landscape design services tailored to the property.','Commercial':'Complete grounds maintenance plus snow management, snowplowing, shoveling, melting/de-icing and snow removal.','Other landscape work':'Bobcat/backhoe work, shrub and stump removal, land clearing and re-grading.'};
+  const cards=document.querySelectorAll('.service-grid .service-card[href],.team-grid .team-card');
+  cards.forEach(original=>{
+    if(original.dataset.viewCard)return;
+    const summary=original.querySelector('p');if(!summary)return;
+    let card=original;
+    const destination=card.getAttribute('href');
+    if(card.matches('a.service-card[href]')){const replacement=document.createElement('article');[...card.attributes].forEach(attr=>{if(attr.name!=='href')replacement.setAttribute(attr.name,attr.value)});while(card.firstChild)replacement.appendChild(card.firstChild);card.replaceWith(replacement);card=replacement;}
+    card.dataset.viewCard='true';card.classList.add('view-card');
+    const title=card.querySelector('h3,h2')?.textContent.trim()||'';
+    const detail=document.createElement('div');detail.className='view-card__detail';
+    if(card.matches('.service-card')&&serviceDetails[title])detail.innerHTML=`<ul>${serviceDetails[title].split(';').map(x=>`<li>${x}</li>`).join('')}</ul>`;else detail.innerHTML=summary.innerHTML;
+    summary.className='view-card__summary';card.appendChild(detail);
+    const hint=document.createElement('span');hint.className='view-card__hint';hint.textContent='Tap to view details';card.appendChild(hint);
+    if(destination){const action=document.createElement('a');action.className='view-card__action';action.href=destination;action.innerHTML='View service <span aria-hidden="true">→</span>';action.setAttribute('aria-label',`View ${title} service details`);card.appendChild(action)}
+    card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-expanded','false');
+    const toggle=()=>{const open=card.classList.toggle('is-open');card.setAttribute('aria-expanded',String(open));hint.textContent=open?'Tap to close':'Tap to view details'};
+    card.addEventListener('click',e=>{if(e.target.closest('.view-card__action'))return;toggle()});
+    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){if(e.target.closest('.view-card__action'))return;e.preventDefault();toggle()}else if(e.key==='Escape'&&card.classList.contains('is-open')){toggle()}});
+  });
 }
 
 function initReveal(){const items=document.querySelectorAll('.reveal');if(!items.length)return;if(!('IntersectionObserver'in window)){items.forEach(el=>el.classList.add('is-visible'));return}const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}}),{threshold:.08,rootMargin:'0px 0px -30px 0px'});items.forEach(el=>observer.observe(el))}
@@ -59,4 +46,4 @@ function initFooterAccordion(){const groups=[...document.querySelectorAll('.foot
 function initGalleryLightbox(){const cards=[...document.querySelectorAll('.gallery-card')];if(!cards.length||document.getElementById('gallery-lightbox'))return;const lb=document.createElement('div');lb.className='gallery-lightbox';lb.id='gallery-lightbox';lb.setAttribute('aria-hidden','true');lb.innerHTML='<div class="gallery-lightbox__stage" role="dialog" aria-modal="true" aria-label="Gallery photo viewer"><button class="gallery-lightbox__close" type="button" aria-label="Close photo viewer"><i class="fa-solid fa-xmark"></i></button><button class="gallery-lightbox__prev" type="button" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button><img class="gallery-lightbox__image" alt=""><button class="gallery-lightbox__next" type="button" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button><div class="gallery-lightbox__caption" aria-live="polite"></div></div>';document.body.appendChild(lb);const img=lb.querySelector('.gallery-lightbox__image'),caption=lb.querySelector('.gallery-lightbox__caption'),prev=lb.querySelector('.gallery-lightbox__prev'),next=lb.querySelector('.gallery-lightbox__next'),closeButton=lb.querySelector('.gallery-lightbox__close');let index=0,touchX=0,lastFocused=null;const title=c=>c.querySelector('.gallery-card__copy strong')?.textContent.trim()||'';const show=i=>{index=(i+cards.length)%cards.length;const c=cards[index],s=c.querySelector('img');if(!s)return;img.src=s.currentSrc||s.src;img.alt=s.alt||title(c);caption.textContent='';const l=document.createElement('span');l.textContent=title(c);caption.appendChild(l);const n=document.createElement('span');n.className='gallery-lightbox__counter';n.textContent=`${index+1} / ${cards.length}`;caption.appendChild(n)};const open=i=>{lastFocused=document.activeElement;show(i);lb.classList.add('is-open');lb.setAttribute('aria-hidden','false');document.body.classList.add('gallery-open');closeButton.focus()};const close=()=>{lb.classList.remove('is-open');lb.setAttribute('aria-hidden','true');document.body.classList.remove('gallery-open');img.removeAttribute('src');lastFocused?.focus?.()};cards.forEach((c,i)=>{c.tabIndex=0;c.setAttribute('role','button');c.addEventListener('click',e=>{e.preventDefault();open(i)});c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(i)}})});closeButton.addEventListener('click',close);prev.addEventListener('click',()=>show(index-1));next.addEventListener('click',()=>show(index+1));lb.addEventListener('click',e=>{if(e.target===lb)close()});document.addEventListener('keydown',e=>{if(!lb.classList.contains('is-open'))return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1)});lb.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX},{passive:true});lb.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-touchX;if(Math.abs(dx)>45)show(dx<0?index+1:index-1)},{passive:true})}
 async function submitContact(form){const status=form.querySelector('.form-status'),button=form.querySelector('button[type=submit]');if(!status||!button)return;const original=button.textContent;status.textContent='Sending…';button.disabled=true;try{const data=Object.fromEntries(new FormData(form).entries());const response=await fetch(`${SUPABASE_URL}/rest/v1/contact_submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Prefer':'return=minimal'},body:JSON.stringify({first_name:data.first_name,last_name:data.last_name,email:data.email,phone:data.phone||null,city:data.city,service:data.service||null,message:data.message,source:data.source||'Website'})});if(!response.ok)throw new Error(await response.text());form.reset();status.textContent='Thanks — your request has been received. We’ll be in touch.';status.className='form-status success'}catch(error){console.error(error);status.textContent='We could not send the form right now. Please call 508-647-0003.';status.className='form-status error'}finally{button.disabled=false;button.textContent=original}}
 function initContactForm(){const form=document.getElementById('contactForm');if(!form)return;form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())submitContact(form)})}
-document.addEventListener('DOMContentLoaded',()=>{initMenu();initReveal();initFooterAccordion();initGalleryLightbox();initContactForm()});
+document.addEventListener('DOMContentLoaded',()=>{initMenu();initViewCardStyles();initViewCards();initReveal();initFooterAccordion();initGalleryLightbox();initContactForm()});
