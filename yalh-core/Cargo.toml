@@ -1,0 +1,12 @@
+[package]
+name = "yalh-core"
+version = "0.1.0"
+edition = "2021"
+description = "YALH authoritative domain core for multi-tenant field operations"
+license = "UNLICENSED"
+
+[lib]
+name = "yalh_core"
+path = "src/lib.rs"
+
+[dependencies]
