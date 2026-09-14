@@ -16,47 +16,58 @@
     const frame=document.getElementById('hamel-os-frame');
     frame.addEventListener('load',()=>{
       const doc=frame.contentDocument;
-      if(!doc) return;
+      if(!doc)return;
       const style=doc.createElement('style');
-      style.id='hamel-os-ghost-nav-arrows';
+      style.id='hamel-os-ghost-arrows';
       style.textContent=`
         @media(max-width:900px){
           .hamel-nav-arrow{
-            width:28px!important;
-            height:28px!important;
-            bottom:calc(39px + env(safe-area-inset-bottom))!important;
+            bottom:calc(78px + env(safe-area-inset-bottom))!important;
+            width:30px!important;
+            height:30px!important;
             border:0!important;
             border-radius:0!important;
             background:transparent!important;
-            color:rgba(168,255,120,.48)!important;
+            color:rgba(168,255,120,.46)!important;
             box-shadow:none!important;
-            opacity:.72!important;
-            font-size:22px!important;
-            font-weight:400!important;
-            text-shadow:0 0 12px rgba(168,255,120,.34),0 0 3px rgba(168,255,120,.5)!important;
             backdrop-filter:none!important;
             -webkit-backdrop-filter:none!important;
+            opacity:.58!important;
+            font-size:25px!important;
+            font-weight:300!important;
+            line-height:1!important;
+            text-shadow:0 0 14px rgba(168,255,120,.20)!important;
             transition:opacity .22s ease,transform .22s ease!important;
             pointer-events:auto!important;
           }
-          .hamel-nav-arrow.left{left:2px!important}
-          .hamel-nav-arrow.right{right:2px!important}
+          .hamel-nav-arrow.left{left:10px!important}
+          .hamel-nav-arrow.right{right:10px!important}
           .hamel-nav-arrow:not(.is-hidden){
             display:grid!important;
-            animation:none!important;
+            animation:hamelGhostArrow 2.6s ease-in-out infinite!important;
           }
+          .hamel-nav-arrow.left:not(.is-hidden){animation-name:hamelGhostArrowLeft!important}
           .hamel-nav-arrow.is-hidden{
             opacity:0!important;
             transform:scale(.8)!important;
+            pointer-events:none!important;
           }
           .hamel-nav-arrow::before{
             content:"";
             position:absolute;
-            inset:3px -5px;
+            inset:3px -8px;
             pointer-events:none;
-            background:radial-gradient(ellipse,rgba(168,255,120,.10),transparent 68%);
-            filter:blur(4px);
+            background:radial-gradient(ellipse,rgba(168,255,120,.08),transparent 70%);
+            filter:blur(5px);
             z-index:-1;
+          }
+          @keyframes hamelGhostArrow{
+            0%,100%{opacity:.34;transform:translateX(0)}
+            50%{opacity:.68;transform:translateX(3px)}
+          }
+          @keyframes hamelGhostArrowLeft{
+            0%,100%{opacity:.34;transform:translateX(0)}
+            50%{opacity:.68;transform:translateX(-3px)}
           }
         }
       `;
