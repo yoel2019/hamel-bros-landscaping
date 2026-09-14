@@ -1,22 +1,175 @@
-const SUPABASE_URL='https://jrgzenkcimujewydqflq.supabase.co';const SUPABASE_KEY='sb_publishable_scV6_vg_8Nmf3Y2p4hbPPw_SiJB-NZN';
+const SUPABASE_URL='https://jrgzenkcimujewydqflq.supabase.co';
+const SUPABASE_KEY='sb_publishable_scV6_vg_8Nmf3Y2p4hbPPw_SiJB-NZN';
 
 function initMenu(){
-  const toggle=document.querySelector('.menu-toggle'),menu=document.querySelector('.navbar__menu'),inner=document.querySelector('.navbar__inner');
+  const toggle=document.querySelector('.menu-toggle');
+  const menu=document.querySelector('.navbar__menu');
+  const inner=document.querySelector('.navbar__inner');
   if(!toggle||!menu||!inner)return;
-  menu.id=menu.id||'site-menu';toggle.setAttribute('aria-controls',menu.id);toggle.classList.add('menu-toggle--floating-widget');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');
-  if(!document.getElementById('navigation-state-fixes')){const style=document.createElement('style');style.id='navigation-state-fixes';style.textContent='.navbar__link.is-active{color:var(--lime)!important;font-weight:800!important;position:relative}.navbar__link.is-active:after{content:"";position:absolute;left:12px;right:12px;bottom:5px;height:2px;border-radius:2px;background:var(--lime)}@media(max-width:780px){.navbar__link.is-active{background:rgba(168,255,120,.08)!important;color:var(--lime)!important}.navbar__link.is-active:after{left:12px;right:auto;bottom:8px;width:28px}}';document.head.appendChild(style)}
-  const setActive=()=>{const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();menu.querySelectorAll('a[href]').forEach(link=>{const raw=link.getAttribute('href')||'';const target=raw.split('#')[0].split('?')[0].split('/').pop().toLowerCase()||'index.html';const active=target===current;link.classList.toggle('is-active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')})};
+  menu.id=menu.id||'site-menu';
+  toggle.setAttribute('aria-controls',menu.id);
+  toggle.setAttribute('aria-expanded','false');
+  toggle.setAttribute('aria-label','Open menu');
+  const setActive=()=>{
+    const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+    menu.querySelectorAll('a[href]').forEach(link=>{
+      const raw=link.getAttribute('href')||'';
+      const target=raw.split('#')[0].split('?')[0].split('/').pop().toLowerCase()||'index.html';
+      const active=target===current;
+      link.classList.toggle('is-active',active);
+      if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
+    });
+  };
   const close=()=>{menu.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');document.body.classList.remove('menu-open')};
   const open=()=>{menu.classList.add('is-open');toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Close menu');document.body.classList.add('menu-open')};
-  toggle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();menu.classList.contains('is-open')?close():open()});menu.addEventListener('click',e=>{if(e.target.closest('a'))close()});document.addEventListener('click',e=>{if(menu.classList.contains('is-open')&&!menu.contains(e.target)&&!toggle.contains(e.target))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('is-open')){close();toggle.focus()}});window.addEventListener('resize',()=>{if(window.innerWidth>1050)close()},{passive:true});setActive();
+  toggle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();menu.classList.contains('is-open')?close():open()});
+  menu.addEventListener('click',e=>{if(e.target.closest('a'))close()});
+  document.addEventListener('click',e=>{if(menu.classList.contains('is-open')&&!menu.contains(e.target)&&!toggle.contains(e.target))close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('is-open')){close();toggle.focus()}});
+  window.addEventListener('resize',()=>{if(window.innerWidth>820)close()},{passive:true});
+  setActive();
 }
-function initSeasonalWeather(){const root=document.documentElement,body=document.body;if(!root||!body)return;body.dataset.season='original';body.dataset.weather='preview';body.dataset.seasonalReady='true';}
-function initSeasonalPreview(){if(document.getElementById('seasonal-preview'))return;const style=document.createElement('style');style.id='seasonal-preview-styles';style.textContent=`body{--season-accent:var(--brand-lime);--season-accent-soft:rgba(168,255,120,.10);--season-border:rgba(168,255,120,.28);--season-glow:rgba(168,255,120,.08);--season-surface:#101010;--season-deep:#0a0a0a;background:var(--season-deep);transition:background-color .5s ease}body[data-season=autumn]{--season-accent:#E59A32;--season-accent-soft:rgba(229,154,50,.12);--season-border:rgba(198,106,43,.48);--season-glow:rgba(198,106,43,.14);--season-surface:#14120f;--season-deep:#0B0D0B}body[data-season=winter]{--season-accent:#9DBDCC;--season-accent-soft:rgba(157,189,204,.13);--season-border:rgba(82,117,138,.46);--season-glow:rgba(82,117,138,.14);--season-surface:#0d1413;--season-deep:#080B0D}body[data-season=spring]{--season-accent:#A6D95B;--season-accent-soft:rgba(166,217,91,.13);--season-border:rgba(123,203,75,.42);--season-glow:rgba(123,203,75,.12);--season-surface:#101610;--season-deep:#0A0F0B}body[data-season=summer]{--season-accent:#D99A32;--season-accent-soft:rgba(217,154,50,.12);--season-border:rgba(155,219,69,.38);--season-glow:rgba(98,185,67,.13);--season-surface:#0d130e;--season-deep:#080C09}body[data-season]:not([data-season=original]) .section--deep{background:linear-gradient(180deg,var(--season-deep),var(--season-surface))}body[data-season]:not([data-season=original]) .hero:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 65% 25%,var(--season-glow),transparent 46%);pointer-events:none;opacity:.8}body[data-season]:not([data-season=original]) .service-card:hover,body[data-season]:not([data-season=original]) .team-card:hover,body[data-season]:not([data-season=original]) .gallery-card:hover{border-color:var(--season-border);box-shadow:0 16px 40px var(--season-glow)}body[data-season]:not([data-season=original]) .service-card__icon,body[data-season]:not([data-season=original]) .eyebrow,body[data-season]:not([data-season=original]) .feature-list i,body[data-season]:not([data-season=original]) .area-chip{color:var(--season-accent)}body[data-season]:not([data-season=original]) .btn-accent{background:var(--season-accent);border-color:var(--season-accent);color:#081008}body[data-season]:not([data-season=original]) .btn-outline{border-color:var(--season-border);color:var(--season-accent)}body[data-season]:not([data-season=original]) .navbar__phone>i{color:var(--season-accent)}body[data-season=autumn] .area-band{background:linear-gradient(90deg,#11140f,#17120d,#0b0d0b)}body[data-season=winter] .area-band{background:linear-gradient(90deg,#090e0e,#0d1517,#080B0D)}body[data-season=spring] .area-band{background:linear-gradient(90deg,#0b120c,#101a12,#0A0F0B)}body[data-season=summer] .area-band{background:linear-gradient(90deg,#0a120b,#11180e,#080C09)}.seasonal-preview{position:fixed;right:18px;bottom:18px;z-index:7000;font-family:inherit}.seasonal-preview__toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(10,10,10,.94);color:#fff;padding:10px 14px;box-shadow:0 12px 32px rgba(0,0,0,.42);cursor:pointer;backdrop-filter:blur(10px)}.seasonal-preview__toggle i{color:var(--season-accent)}.seasonal-preview__toggle:hover,.seasonal-preview__toggle:focus-visible{border-color:var(--season-accent);outline:none}.seasonal-preview__panel{position:absolute;right:0;bottom:52px;width:min(310px,calc(100vw - 28px));padding:14px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(10,10,10,.97);box-shadow:0 22px 60px rgba(0,0,0,.55)}.seasonal-preview__panel[hidden]{display:none}.seasonal-preview__head{display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:12px}.seasonal-preview__close{border:0;background:transparent;color:#aaa;font-size:1.4rem;line-height:1;cursor:pointer}.seasonal-preview__choices{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.seasonal-preview__choices button{display:flex;align-items:center;gap:8px;min-height:42px;padding:9px 10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#111;color:#ddd;cursor:pointer}.seasonal-preview__choices button i{width:18px;color:var(--season-accent)}.seasonal-preview__choices button:hover,.seasonal-preview__choices button:focus-visible,.seasonal-preview__choices button.is-selected{border-color:var(--season-accent);color:#fff;background:var(--season-accent-soft);outline:none}.seasonal-preview__panel p{margin:10px 2px 0;color:#8f938c;font-size:.68rem;line-height:1.4}@media(max-width:780px){.seasonal-preview{right:12px;bottom:12px}.seasonal-preview__toggle{padding:9px 12px}.seasonal-preview__toggle span{font-size:.78rem}.seasonal-preview__panel{bottom:48px}}@media(prefers-reduced-motion:reduce){body{transition:none}}`;document.head.appendChild(style);const root=document.createElement('div');root.id='seasonal-preview';root.className='seasonal-preview';root.innerHTML='<button class="seasonal-preview__toggle" type="button" aria-expanded="false" aria-controls="seasonal-preview-panel" title="Preview seasonal colors"><i class="fa-solid fa-palette"></i><span>Preview</span></button><div class="seasonal-preview__panel" id="seasonal-preview-panel" hidden><div class="seasonal-preview__head"><strong>Seasonal preview</strong><button type="button" class="seasonal-preview__close" aria-label="Close preview">×</button></div><div class="seasonal-preview__choices" role="group" aria-label="Choose a seasonal palette"></div><p>Temporary preview only. Weather is not being consulted.</p></div>';document.body.appendChild(root);const seasons={original:['fa-leaf','Original'],spring:['fa-seedling','Spring'],summer:['fa-sun','Summer'],autumn:['fa-leaf','Autumn'],winter:['fa-snowflake','Winter']};const apply=key=>{if(!seasons[key])key='original';document.body.dataset.season=key;root.querySelectorAll('[data-season-choice]').forEach(b=>{const active=b.dataset.seasonChoice===key;b.classList.toggle('is-selected',active);b.setAttribute('aria-pressed',String(active))})};const choices=root.querySelector('.seasonal-preview__choices');Object.entries(seasons).forEach(([key,[icon,label]])=>{const b=document.createElement('button');b.type='button';b.dataset.seasonChoice=key;b.setAttribute('aria-pressed','false');b.innerHTML=`<i class="fa-solid ${icon}" aria-hidden="true"></i><span>${label}</span>`;b.addEventListener('click',()=>apply(key));choices.appendChild(b)});const toggle=root.querySelector('.seasonal-preview__toggle'),panel=root.querySelector('.seasonal-preview__panel'),close=root.querySelector('.seasonal-preview__close');const setOpen=open=>{toggle.setAttribute('aria-expanded',String(open));panel.hidden=!open;root.classList.toggle('is-open',open)};toggle.addEventListener('click',()=>setOpen(panel.hidden));close.addEventListener('click',()=>setOpen(false));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)setOpen(false)});document.addEventListener('click',e=>{if(!root.contains(e.target)&&!panel.hidden)setOpen(false)});apply('original')}
-function initViewCardStyles(){if(document.getElementById('view-card-styles'))return;const s=document.createElement('style');s.id='view-card-styles';s.textContent='.view-card{position:relative;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;outline:none}.view-card:focus-visible{border-color:var(--lime);box-shadow:0 0 0 3px rgba(168,255,120,.12)}.view-card__summary{color:var(--gray);font-size:.88rem;margin:0}.view-card__detail{max-height:0;opacity:0;overflow:hidden;color:var(--light);font-size:.84rem;line-height:1.55;transition:max-height .3s ease,opacity .25s ease,margin-top .25s ease}.view-card.is-open .view-card__detail{max-height:320px;opacity:1;margin-top:12px}.view-card__hint{display:block;margin-top:auto;padding-top:16px;color:var(--lime);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.view-card.is-open .view-card__hint{color:var(--gray)}.view-card__detail ul{margin:0;padding-left:18px}.view-card__detail li{margin:0 0 5px}.view-card__detail p{margin:0;color:inherit}.view-card__action{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:12px;min-height:38px;padding:9px 13px;border:1px solid rgba(168,255,120,.45);border-radius:8px;color:var(--lime);font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;background:rgba(168,255,120,.06);transition:background .2s ease,border-color .2s ease,transform .2s ease}.view-card__action:hover{background:rgba(168,255,120,.12);border-color:var(--lime);transform:translateY(-1px)}.service-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.service-grid .view-card{min-height:230px}.team-grid .view-card{min-height:210px}.team-grid .view-card__detail{font-size:.82rem}.team-grid .view-card__hint{padding-top:14px}@media(max-width:1050px){.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:780px){.service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.service-grid .view-card{min-height:215px;padding:20px}}@media(max-width:500px){.service-grid{grid-template-columns:1fr}.service-grid .view-card{min-height:205px}.view-card__detail{font-size:.83rem}}@media(prefers-reduced-motion:reduce){.view-card__detail,.view-card__action{transition:none}}';document.head.appendChild(s)}
-function initViewCards(){const serviceDetails={'Maintenance':'Spring & fall cleanups; edging & mulching; weeding; lawn care; fertilizing; lawn renovations; new lawn installations; aeration; de-thatching; seeding; trimming of trees and shrubs.','Planting & design':'Installation of trees, shrubs and perennials, plus landscape design services tailored to the property.','Commercial':'Complete grounds maintenance plus snow management, snowplowing, shoveling, melting/de-icing and snow removal.','Other landscape work':'Bobcat/backhoe work, shrub and stump removal, land clearing and re-grading.'};const cards=document.querySelectorAll('.service-grid .service-card[href],.team-grid .team-card');cards.forEach(original=>{if(original.dataset.viewCard)return;const summary=original.querySelector('p');if(!summary)return;let card=original;const destination=card.getAttribute('href');if(card.matches('a.service-card[href]')){const replacement=document.createElement('article');[...card.attributes].forEach(attr=>{if(attr.name!=='href')replacement.setAttribute(attr.name,attr.value)});while(card.firstChild)replacement.appendChild(card.firstChild);card.replaceWith(replacement);card=replacement}card.dataset.viewCard='true';card.classList.add('view-card');const title=card.querySelector('h3,h2')?.textContent.trim()||'';const detail=document.createElement('div');detail.className='view-card__detail';if(card.matches('.service-card')&&serviceDetails[title])detail.innerHTML=`<ul>${serviceDetails[title].split(';').map(x=>`<li>${x}</li>`).join('')}</ul>`;else detail.innerHTML=summary.innerHTML;summary.className='view-card__summary';card.appendChild(detail);const hint=document.createElement('span');hint.className='view-card__hint';hint.textContent='Tap to view details';card.appendChild(hint);if(destination){const action=document.createElement('a');action.className='view-card__action';action.href=destination;action.innerHTML='View service <span aria-hidden="true">→</span>';action.setAttribute('aria-label',`View ${title} service details`);card.appendChild(action)}card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-expanded','false');const toggle=()=>{const open=card.classList.toggle('is-open');card.setAttribute('aria-expanded',String(open));hint.textContent=open?'Tap to close':'Tap to view details'};card.addEventListener('click',e=>{if(e.target.closest('.view-card__action'))return;toggle()});card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){if(e.target.closest('.view-card__action'))return;e.preventDefault();toggle()}else if(e.key==='Escape'&&card.classList.contains('is-open'))toggle()})})}
-function initReveal(){const items=document.querySelectorAll('.reveal');if(!items.length)return;if(!('IntersectionObserver'in window)){items.forEach(el=>el.classList.add('is-visible'));return}const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}}),{threshold:.08,rootMargin:'0px 0px -30px 0px'});items.forEach(el=>observer.observe(el))}
-function initFooterAccordion(){const groups=[...document.querySelectorAll('.footer__top>div:not(.footer__brand)')];groups.forEach((group,index)=>{const title=group.querySelector('h3'),list=group.querySelector('ul');if(!title||!list||group.dataset.footerReady)return;group.dataset.footerReady='true';title.setAttribute('role','button');title.setAttribute('tabindex','0');title.setAttribute('aria-expanded',index===0?'true':'false');if(index===0)group.classList.add('is-open');const toggle=()=>{if(window.innerWidth>780)return;const open=group.classList.toggle('is-open');title.setAttribute('aria-expanded',String(open))};title.addEventListener('click',toggle);title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}})});const sync=()=>groups.forEach((group,index)=>{const title=group.querySelector('h3');if(!title)return;if(window.innerWidth>780){group.classList.add('is-open');title.setAttribute('aria-expanded','true')}else if(index!==0){group.classList.remove('is-open');title.setAttribute('aria-expanded','false')}});window.addEventListener('resize',sync,{passive:true});sync()}
-function initGalleryLightbox(){const cards=[...document.querySelectorAll('.gallery-card')];if(!cards.length||document.getElementById('gallery-lightbox'))return;const lb=document.createElement('div');lb.className='gallery-lightbox';lb.id='gallery-lightbox';lb.setAttribute('aria-hidden','true');lb.innerHTML='<div class="gallery-lightbox__stage" role="dialog" aria-modal="true" aria-label="Gallery photo viewer"><button class="gallery-lightbox__close" type="button" aria-label="Close photo viewer"><i class="fa-solid fa-xmark"></i></button><button class="gallery-lightbox__prev" type="button" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button><img class="gallery-lightbox__image" alt=""><button class="gallery-lightbox__next" type="button" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button><div class="gallery-lightbox__caption" aria-live="polite"></div></div>';document.body.appendChild(lb);const img=lb.querySelector('.gallery-lightbox__image'),caption=lb.querySelector('.gallery-lightbox__caption'),prev=lb.querySelector('.gallery-lightbox__prev'),next=lb.querySelector('.gallery-lightbox__next'),closeButton=lb.querySelector('.gallery-lightbox__close');let index=0,touchX=0,lastFocused=null;const title=c=>c.querySelector('.gallery-card__copy strong')?.textContent.trim()||'';const show=i=>{index=(i+cards.length)%cards.length;const c=cards[index],s=c.querySelector('img');if(!s)return;img.src=s.currentSrc||s.src;img.alt=s.alt||title(c);caption.textContent='';const l=document.createElement('span');l.textContent=title(c);caption.appendChild(l);const n=document.createElement('span');n.className='gallery-lightbox__counter';n.textContent=`${index+1} / ${cards.length}`;caption.appendChild(n)};const open=i=>{lastFocused=document.activeElement;show(i);lb.classList.add('is-open');lb.setAttribute('aria-hidden','false');document.body.classList.add('gallery-open');closeButton.focus()};const close=()=>{lb.classList.remove('is-open');lb.setAttribute('aria-hidden','true');document.body.classList.remove('gallery-open');img.removeAttribute('src');lastFocused?.focus?.()};cards.forEach((c,i)=>{c.tabIndex=0;c.setAttribute('role','button');c.addEventListener('click',e=>{e.preventDefault();open(i)});c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(i)}})});closeButton.addEventListener('click',close);prev.addEventListener('click',()=>show(index-1));next.addEventListener('click',()=>show(index+1));lb.addEventListener('click',e=>{if(e.target===lb)close()});document.addEventListener('keydown',e=>{if(!lb.classList.contains('is-open'))return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1)});lb.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX},{passive:true});lb.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-touchX;if(Math.abs(dx)>45)show(dx<0?index+1:index-1)},{passive:true})}
-async function submitContact(form){const status=form.querySelector('.form-status'),button=form.querySelector('button[type=submit]');if(!status||!button)return;const original=button.textContent;status.textContent='Sending…';button.disabled=true;try{const data=Object.fromEntries(new FormData(form).entries());const response=await fetch(`${SUPABASE_URL}/rest/v1/contact_submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Prefer':'return=minimal'},body:JSON.stringify({first_name:data.first_name,last_name:data.last_name,email:data.email,phone:data.phone||null,city:data.city,service:data.service||null,message:data.message,source:data.source||'Website'})});if(!response.ok)throw new Error(await response.text());form.reset();status.textContent='Thanks — your request has been received. We’ll be in touch.';status.className='form-status success'}catch(error){console.error(error);status.textContent='We could not send the form right now. Please call 508-647-0003.';status.className='form-status error'}finally{button.disabled=false;button.textContent=original}}
-function initContactForm(){const form=document.getElementById('contactForm');if(!form)return;form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())submitContact(form)})}
-document.addEventListener('DOMContentLoaded',()=>{initSeasonalWeather();initSeasonalPreview();initMenu();initViewCardStyles();initViewCards();initReveal();initFooterAccordion();initGalleryLightbox();initContactForm()});
+
+function initViewCards(){
+  const serviceDetails={
+    'Maintenance':'Spring & fall cleanups; edging & mulching; weeding; lawn care; fertilizing; lawn renovations; new lawn installations; aeration; de-thatching; seeding; trimming of trees and shrubs.',
+    'Planting & design':'Installation of trees, shrubs and perennials, plus landscape design services tailored to the property.',
+    'Commercial':'Complete grounds maintenance plus snow management, snowplowing, shoveling, melting/de-icing and snow removal.',
+    'Other landscape work':'Bobcat/backhoe work, shrub and stump removal, land clearing and re-grading.'
+  };
+  const cards=document.querySelectorAll('.service-grid .service-card[href],.team-grid .team-card');
+  cards.forEach(original=>{
+    if(original.dataset.viewCard)return;
+    const summary=original.querySelector('p');
+    if(!summary)return;
+    let card=original;
+    const destination=card.getAttribute('href');
+    if(card.matches('a.service-card[href]')){
+      const replacement=document.createElement('article');
+      [...card.attributes].forEach(attr=>{if(attr.name!=='href')replacement.setAttribute(attr.name,attr.value)});
+      while(card.firstChild)replacement.appendChild(card.firstChild);
+      card.replaceWith(replacement);
+      card=replacement;
+    }
+    card.dataset.viewCard='true';
+    card.classList.add('view-card');
+    const title=card.querySelector('h3,h2')?.textContent.trim()||'';
+    const detail=document.createElement('div');
+    detail.className='view-card__detail';
+    if(card.matches('.service-card')&&serviceDetails[title])detail.innerHTML=`<ul>${serviceDetails[title].split(';').map(x=>`<li>${x}</li>`).join('')}</ul>`;
+    else detail.innerHTML=summary.innerHTML;
+    summary.className='view-card__summary';
+    card.appendChild(detail);
+    const hint=document.createElement('span');
+    hint.className='view-card__hint';
+    hint.textContent='Tap to view details';
+    card.appendChild(hint);
+    if(destination){
+      const action=document.createElement('a');
+      action.className='view-card__action';
+      action.href=destination;
+      action.innerHTML='View service <span aria-hidden="true">→</span>';
+      action.setAttribute('aria-label',`View ${title} service details`);
+      card.appendChild(action);
+    }
+    card.setAttribute('tabindex','0');
+    card.setAttribute('role','button');
+    card.setAttribute('aria-expanded','false');
+    const toggle=()=>{const open=card.classList.toggle('is-open');card.setAttribute('aria-expanded',String(open));hint.textContent=open?'Tap to close':'Tap to view details'};
+    card.addEventListener('click',e=>{if(e.target.closest('.view-card__action'))return;toggle()});
+    card.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){if(e.target.closest('.view-card__action'))return;e.preventDefault();toggle()}
+      else if(e.key==='Escape'&&card.classList.contains('is-open'))toggle();
+    });
+  });
+}
+
+function initReveal(){
+  const items=document.querySelectorAll('.reveal');
+  if(!items.length)return;
+  if(!('IntersectionObserver'in window)){items.forEach(el=>el.classList.add('is-visible'));return}
+  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}}),{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+  items.forEach(el=>observer.observe(el));
+}
+
+function initFooterAccordion(){
+  const groups=[...document.querySelectorAll('.footer__top>div:not(.footer__brand)')];
+  groups.forEach((group,index)=>{
+    const title=group.querySelector('h3');
+    const list=group.querySelector('ul');
+    if(!title||!list||group.dataset.footerReady)return;
+    group.dataset.footerReady='true';
+    title.setAttribute('role','button');
+    title.setAttribute('tabindex','0');
+    title.setAttribute('aria-expanded',index===0?'true':'false');
+    if(index===0)group.classList.add('is-open');
+    const toggle=()=>{if(window.innerWidth>820)return;const open=group.classList.toggle('is-open');title.setAttribute('aria-expanded',String(open))};
+    title.addEventListener('click',toggle);
+    title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+  });
+  const sync=()=>groups.forEach((group,index)=>{
+    const title=group.querySelector('h3');
+    if(!title)return;
+    if(window.innerWidth>820){group.classList.add('is-open');title.setAttribute('aria-expanded','true')}
+    else if(index!==0){group.classList.remove('is-open');title.setAttribute('aria-expanded','false')}
+  });
+  window.addEventListener('resize',sync,{passive:true});
+  sync();
+}
+
+function initGalleryLightbox(){
+  const cards=[...document.querySelectorAll('.gallery-card')];
+  if(!cards.length||document.getElementById('gallery-lightbox'))return;
+  const lb=document.createElement('div');
+  lb.className='gallery-lightbox';
+  lb.id='gallery-lightbox';
+  lb.setAttribute('aria-hidden','true');
+  lb.innerHTML='<div class="gallery-lightbox__stage" role="dialog" aria-modal="true" aria-label="Gallery photo viewer"><button class="gallery-lightbox__close" type="button" aria-label="Close photo viewer"><i class="fa-solid fa-xmark"></i></button><button class="gallery-lightbox__prev" type="button" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button><img class="gallery-lightbox__image" alt=""><button class="gallery-lightbox__next" type="button" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button><div class="gallery-lightbox__caption" aria-live="polite"></div></div>';
+  document.body.appendChild(lb);
+  const img=lb.querySelector('.gallery-lightbox__image'),caption=lb.querySelector('.gallery-lightbox__caption'),prev=lb.querySelector('.gallery-lightbox__prev'),next=lb.querySelector('.gallery-lightbox__next'),closeButton=lb.querySelector('.gallery-lightbox__close');
+  let index=0,touchX=0,lastFocused=null;
+  const title=c=>c.querySelector('.gallery-card__copy strong')?.textContent.trim()||'';
+  const show=i=>{
+    index=(i+cards.length)%cards.length;
+    const c=cards[index],source=c.querySelector('img');
+    if(!source)return;
+    img.src=source.currentSrc||source.src;
+    img.alt=source.alt||title(c);
+    caption.textContent='';
+    const label=document.createElement('span');label.textContent=title(c);caption.appendChild(label);
+    const counter=document.createElement('span');counter.className='gallery-lightbox__counter';counter.textContent=`${index+1} / ${cards.length}`;caption.appendChild(counter);
+  };
+  const open=i=>{lastFocused=document.activeElement;show(i);lb.classList.add('is-open');lb.setAttribute('aria-hidden','false');document.body.classList.add('gallery-open');closeButton.focus()};
+  const close=()=>{lb.classList.remove('is-open');lb.setAttribute('aria-hidden','true');document.body.classList.remove('gallery-open');img.removeAttribute('src');lastFocused?.focus?.()};
+  cards.forEach((c,i)=>{c.tabIndex=0;c.setAttribute('role','button');c.addEventListener('click',e=>{e.preventDefault();open(i)});c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(i)}})});
+  closeButton.addEventListener('click',close);prev.addEventListener('click',()=>show(index-1));next.addEventListener('click',()=>show(index+1));
+  lb.addEventListener('click',e=>{if(e.target===lb)close()});
+  document.addEventListener('keydown',e=>{if(!lb.classList.contains('is-open'))return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1)});
+  lb.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX},{passive:true});
+  lb.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-touchX;if(Math.abs(dx)>45)show(dx<0?index+1:index-1)},{passive:true});
+}
+
+async function submitContact(form){
+  const status=form.querySelector('.form-status');
+  const button=form.querySelector('button[type=submit]');
+  if(!status||!button)return;
+  const original=button.textContent;
+  status.textContent='Sending…';
+  button.disabled=true;
+  try{
+    const data=Object.fromEntries(new FormData(form).entries());
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/contact_submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Prefer':'return=minimal'},body:JSON.stringify({first_name:data.first_name,last_name:data.last_name,email:data.email,phone:data.phone||null,city:data.city,service:data.service||null,message:data.message,source:data.source||'Website'})});
+    if(!response.ok)throw new Error(await response.text());
+    form.reset();status.textContent='Thanks — your request has been received. We’ll be in touch.';status.className='form-status success';
+  }catch(error){
+    console.error(error);status.textContent='We could not send the form right now. Please call 508-647-0003.';status.className='form-status error';
+  }finally{button.disabled=false;button.textContent=original}
+}
+
+function initContactForm(){
+  const form=document.getElementById('contactForm');
+  if(!form)return;
+  form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())submitContact(form)});
+}
+
+document.addEventListener('DOMContentLoaded',()=>{initMenu();initViewCards();initReveal();initFooterAccordion();initGalleryLightbox();initContactForm()});
