@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Meet the Hamel Bros. team — Paul, Dave, Steve, and Jimmy. A family committed to quality landscaping in Natick, MA since 2001." />
+  <title>About Us | Hamel Bros. Landscaping</title>
+  <link rel="icon" type="image/png" href="hamelBros.LandscapingLogo.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ---- About page specific styles ---- */
+
+    /* Team section */
+    .team-section {
+      padding: var(--space-3xl) 0;
+      background: var(--color-green-deep);
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-lg);
+      margin-top: var(--space-2xl);
+    }
+
+    .team-card {
+      background: rgba(10,10,10,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      transition: var(--transition-base);
+      display: grid;
+      grid-template-columns: 180px 1fr;
+    }
+
+    .team-card:hover {
+      border-color: rgba(168,255,120,0.25);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .team-card__img {
+      width: 180px;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      min-height: 220px;
+      filter: grayscale(20%);
+      transition: filter var(--transition-slow);
+    }
+
+    .team-card:hover .team-card__img {
+      filter: grayscale(0%);
+    }
+
+    .team-card__body {
+      padding: var(--space-xl);
+    }
+
+    .team-card__name {
+      font-family: var(--font-heading);
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      color: var(--color-white);
+      margin-bottom: 4px;
+    }
+
+    .team-card__role {
+      font-size: var(--fs-sm);
+      color: var(--color-green-lime);
+      font-weight: 600;
+      margin-bottom: var(--space-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .team-card__bio {
+      font-size: var(--fs-sm);
+      color: var(--color-gray);
+      line-height: 1.7;
+      margin-bottom: var(--space-md);
+    }
+
+    .team-card__quote {
+      font-size: var(--fs-sm);
+      color: var(--color-gray-light);
+      font-style: italic;
+      border-left: 3px solid var(--color-green-lime);
+      padding-left: var(--space-sm);
+      line-height: 1.6;
+    }
+
+    /* Values section */
+    .values-section {
+      padding: var(--space-3xl) 0;
+    }
+
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-2xl);
+    }
+
+    .value-card {
+      background: var(--color-green-deep);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-xl);
+      text-align: center;
+      transition: var(--transition-base);
+    }
+
+    .value-card:hover {
+      border-color: rgba(168,255,120,0.25);
+      transform: translateY(-4px);
+    }
+
+    .value-card__icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(168,255,120,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-md);
+      font-size: 24px;
+      color: var(--color-green-lime);
+      transition: var(--transition-base);
+    }
+
+    .value-card:hover .value-card__icon {
+      background: var(--color-green-lime);
+      color: var(--color-black);
+    }
+
+    .value-card__title {
+      font-family: var(--font-heading);
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: var(--color-white);
+      margin-bottom: 8px;
+    }
+
+    .value-card__desc {
+      font-size: var(--fs-sm);
+      color: var(--color-gray);
+      line-height: 1.7;
+    }
+
+    /* Story section */
+    .story-section {
+      padding: var(--space-3xl) 0;
+      background: var(--color-green-deep);
+    }
+
+    .story-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3xl);
+      align-items: center;
+    }
+
+    .story-img {
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+    }
+
+    .story-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @media (max-width: 1024px) {
+      .team-grid { grid-template-columns: 1fr; }
+      .team-card { grid-template-columns: 140px 1fr; }
+      .values-grid { grid-template-columns: repeat(2, 1fr); }
+      .story-inner { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .team-card { grid-template-columns: 1fr; }
+      .team-card__img { width: 100%; height: 240px; }
+      .values-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="container">
+      <div class="topbar__inner">
+        <div class="topbar__info">
+          <div class="topbar__item"><i class="fa-solid fa-location-dot"></i><span>P.O. Box 2069, Natick, MA 01760</span></div>
+          <div class="topbar__item"><i class="fa-solid fa-phone"></i><span>508-647-0003</span></div>
+          <div class="topbar__item"><i class="fa-solid fa-clock"></i><span>Mon–Sat: 7am–6pm</span></div>
+        </div>
+        <div class="topbar__social">
+          <span>Follow Us</span>
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar__inner">
+        <a href="index.html" class="navbar__logo">
+          <img src="hamelBros.LandscapingLogo.png" alt="Hamel Bros. Landscaping Logo" />
+        </a>
+        <ul class="navbar__menu" role="list">
+          <li><a href="index.html"    class="navbar__link">Home</a></li>
+          <li><a href="about.html"    class="navbar__link">About</a></li>
+          <li><a href="services.html" class="navbar__link">Services</a></li>
+          <li><a href="gallery.html"  class="navbar__link">Gallery</a></li>
+          <li><a href="contact.html"  class="navbar__link">Contact</a></li>
+        </ul>
+        <a href="tel:5086470003" class="navbar__phone" aria-label="Call Hamel Bros. Landscaping">
+            <i class="fa-solid fa-phone"></i>
+            <div>
+              <div style="font-size:0.7rem; color:var(--color-gray);">Call Now</div>
+              <strong>508-647-0003</strong>
+            </div>
+          </a>
+
+        <div class="navbar__cta">
+          <a href="contact.html" class="btn btn-primary">Free Estimate <span class="btn-arrow">↗</span></a>
+          <button class="navbar__toggle" aria-label="Toggle menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero" aria-label="About page hero">
+    <div class="container">
+      <div class="section-label fade-up">Our Story</div>
+      <h1 class="page-hero__title fade-up" style="transition-delay:.1s">About Us</h1>
+      <nav class="page-hero__breadcrumb fade-up" style="transition-delay:.2s" aria-label="Breadcrumb">
+        <a href="index.html">Home</a><span>/</span><span>About</span>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       STORY SECTION
+       ============================================================ -->
+  <section class="story-section" aria-labelledby="story-heading">
+    <div class="container">
+      <div class="story-inner">
+
+        <div class="story-img fade-left">
+          <img
+            src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700"
+            data-src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700"
+            alt="The Hamel team working together"
+            loading="lazy"
+          />
+        </div>
+
+        <div class="fade-right">
+          <div class="section-label">Est. 2001</div>
+          <h2 class="section-heading" id="story-heading">
+            More Than Just <span>Landscapers</span>
+          </h2>
+          <p class="section-sub" style="margin-bottom: var(--space-md);">
+            Hamel Bros. Landscaping was founded in 2001 by brothers Paul and Dave Hamel
+            with a clear mission: deliver professional-grade landscaping while treating
+            every client like a neighbor.
+          </p>
+          <p style="font-size: var(--fs-base); color: var(--color-gray); line-height: 1.8; margin-bottom: var(--space-lg);">
+            Over two decades later, that mission hasn't changed. We've grown our team,
+            expanded our services, and built lasting relationships throughout the Metro West
+            area — but we've never lost sight of what matters most: your satisfaction.
+          </p>
+          <!-- Stats inline -->
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-md);">
+            <div style="text-align:center; padding: var(--space-md); background:rgba(168,255,120,0.05); border:1px solid rgba(168,255,120,0.15); border-radius:var(--border-radius);">
+              <div style="font-family:var(--font-heading); font-size:var(--fs-3xl); font-weight:900; color:var(--color-green-lime);" data-target="25" data-suffix="+">0+</div>
+              <div style="font-size:var(--fs-xs); color:var(--color-gray);">Years in Business</div>
+            </div>
+            <div style="text-align:center; padding: var(--space-md); background:rgba(168,255,120,0.05); border:1px solid rgba(168,255,120,0.15); border-radius:var(--border-radius);">
+              <div style="font-family:var(--font-heading); font-size:var(--fs-3xl); font-weight:900; color:var(--color-green-lime);" data-target="500" data-suffix="+">0+</div>
+              <div style="font-size:var(--fs-xs); color:var(--color-gray);">Happy Clients</div>
+            </div>
+            <div style="text-align:center; padding: var(--space-md); background:rgba(168,255,120,0.05); border:1px solid rgba(168,255,120,0.15); border-radius:var(--border-radius);">
+              <div style="font-family:var(--font-heading); font-size:var(--fs-3xl); font-weight:900; color:var(--color-green-lime);" data-target="100" data-suffix="%">0%</div>
+              <div style="font-size:var(--fs-xs); color:var(--color-gray);">Family Owned</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       VALUES SECTION
+       ============================================================ -->
+  <section class="values-section" aria-labelledby="values-heading">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-label fade-up">What Drives Us</div>
+        <h2 class="section-heading fade-up text-center" id="values-heading" style="transition-delay:.1s">
+          Our Core <span>Values</span>
+        </h2>
+      </div>
+      <div class="values-grid stagger">
+        <div class="value-card fade-up">
+          <div class="value-card__icon"><i class="fa-solid fa-handshake"></i></div>
+          <h3 class="value-card__title">Customer First</h3>
+          <p class="value-card__desc">Clear communication and accessibility are just as important as the job itself. Your satisfaction drives every decision we make.</p>
+        </div>
+        <div class="value-card fade-up">
+          <div class="value-card__icon"><i class="fa-solid fa-award"></i></div>
+          <h3 class="value-card__title">Quality Work</h3>
+          <p class="value-card__desc">We hold ourselves to the highest standards. Every project is completed with precision, pride, and attention to detail.</p>
+        </div>
+        <div class="value-card fade-up">
+          <div class="value-card__icon"><i class="fa-solid fa-people-group"></i></div>
+          <h3 class="value-card__title">Community Roots</h3>
+          <p class="value-card__desc">We're local. We live and work in the same communities we serve — and that makes all the difference in how we approach our work.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TEAM SECTION
+       ============================================================ -->
+  <section class="team-section" aria-labelledby="team-heading">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-label fade-up">The Hamel Family</div>
+        <h2 class="section-heading fade-up text-center" id="team-heading" style="transition-delay:.1s">
+          Meet Our <span>Team</span>
+        </h2>
+        <p class="section-sub fade-up text-center" style="margin:0 auto var(--space-lg); transition-delay:.2s;">
+          Four brothers, one mission. Get to know the people behind every
+          perfectly manicured lawn.
+        </p>
+      </div>
+
+      <div class="team-grid stagger">
+
+        <!-- Paul -->
+        <div class="team-card fade-up">
+          <img
+            class="team-card__img"
+            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300"
+            data-src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300"
+            alt="Paul Hamel"
+            loading="lazy"
+          />
+          <div class="team-card__body">
+            <h3 class="team-card__name">Paul Hamel</h3>
+            <div class="team-card__role">Co-Founder & Operations</div>
+            <p class="team-card__bio">
+              A 1998 graduate of Bentley University. Paul oversees day-to-day
+              operations, trains staff, works with customers on design projects,
+              and manages pruning and nursery stock purchasing.
+            </p>
+            <blockquote class="team-card__quote">
+              "A great yard doesn't just happen — it's carefully planned, expertly executed, and maintained with pride."
+            </blockquote>
+          </div>
+        </div>
+
+        <!-- Dave -->
+        <div class="team-card fade-up">
+          <img
+            class="team-card__img"
+            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300"
+            data-src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300"
+            alt="Dave Hamel"
+            loading="lazy"
+          />
+          <div class="team-card__body">
+            <h3 class="team-card__name">Dave Hamel</h3>
+            <div class="team-card__role">Co-Founder & Client Relations</div>
+            <p class="team-card__bio">
+              A 1998 graduate of Norwich University. Dave handles daily
+              scheduling, estimates, and — most importantly — communicating
+              with clients. You'll often find him out in the field planting
+              trees or operating the backhoe.
+            </p>
+            <blockquote class="team-card__quote">
+              "Listening to our clients is the foundation of every great project we've ever delivered."
+            </blockquote>
+          </div>
+        </div>
+
+        <!-- Steve -->
+        <div class="team-card fade-up">
+          <img
+            class="team-card__img"
+            src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300"
+            data-src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300"
+            alt="Steve Hamel"
+            loading="lazy"
+          />
+          <div class="team-card__body">
+            <h3 class="team-card__name">Steve Hamel</h3>
+            <div class="team-card__role">Lawn Care Supervisor</div>
+            <p class="team-card__bio">
+              A valued Hamel Bros. employee since 2001. Steve oversees all
+              commercial and residential lawn care operations and is also
+              responsible for fleet and equipment maintenance.
+            </p>
+            <blockquote class="team-card__quote">
+              "The best lawn care is the kind you never have to worry about — and that's what we deliver."
+            </blockquote>
+          </div>
+        </div>
+
+        <!-- Jimmy -->
+        <div class="team-card fade-up">
+          <img
+            class="team-card__img"
+            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300"
+            data-src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300"
+            alt="Jimmy Hamel"
+            loading="lazy"
+          />
+          <div class="team-card__body">
+            <h3 class="team-card__name">Jimmy Hamel</h3>
+            <div class="team-card__role">Landscaping Crew Lead</div>
+            <p class="team-card__bio">
+              The youngest Hamel brother. Jimmy leads the general landscaping
+              crew, overseeing mulch installation, planting, and pruning. He
+              is a graduate of the University of Buffalo where he was captain
+              of the Division 1 wrestling program.
+            </p>
+            <blockquote class="team-card__quote">
+              "We approach every job with the same discipline and teamwork I learned on the mat."
+            </blockquote>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="cta-banner" aria-label="Call to action">
+    <div class="container">
+      <div class="cta-banner__inner">
+        <div class="fade-left">
+          <h2 class="cta-banner__title">Ready to Work With Our Team?</h2>
+          <p class="cta-banner__sub">Get your free estimate today — no obligation.</p>
+        </div>
+        <div class="fade-right" style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <a href="contact.html" class="btn btn-primary">Get Free Estimate <span class="btn-arrow">↗</span></a>
+          <a href="tel:5086470003" class="btn btn-outline"><i class="fa-solid fa-phone" style="margin-right:4px;"></i>508-647-0003</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <img src="hamelBros.LandscapingLogo.png" alt="Hamel Bros. Landscaping" />
+          <p>Family-owned landscaping company serving the Metro West area of Massachusetts since 2001.</p>
+          <div class="footer__social">
+            <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div>
+          <h3 class="footer__col-title">Quick Links</h3>
+          <ul class="footer__links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="footer__col-title">Our Services</h3>
+          <ul class="footer__links">
+            <li><a href="services.html">Lawn Maintenance</a></li>
+            <li><a href="services.html">Planting & Design</a></li>
+            <li><a href="services.html">Commercial Services</a></li>
+            <li><a href="services.html">Snow Removal</a></li>
+            <li><a href="services.html">Bobcat & Grading</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="footer__col-title">Contact Info</h3>
+          <div class="footer__contact-item"><i class="fa-solid fa-location-dot"></i><span>P.O. Box 2069<br>Natick, MA 01760</span></div>
+          <div class="footer__contact-item"><i class="fa-solid fa-phone"></i><span><a href="tel:5086470003">508-647-0003</a></span></div>
+          <div class="footer__contact-item"><i class="fa-solid fa-clock"></i><span>Mon–Sat: 7am–6pm</span></div>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>&copy; 2026 Hamel Bros. Landscaping Inc. All rights reserved.</p>
+        <p>Designed with care for the Hamel Bros. family.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

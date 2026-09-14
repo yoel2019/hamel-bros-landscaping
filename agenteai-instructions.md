@@ -12,6 +12,8 @@
 **Estructura:** Multipágina (5 páginas)  
 **URL original:** http://www.hamellandscaping.com/
 
+---
+
 ## Datos reales de la empresa
 - **Nombre:** Hamel Bros. Landscaping Inc.
 - **Fundado:** 2001 por Paul y Dave Hamel

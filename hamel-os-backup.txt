@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hamel OS — Field Intelligence</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    *{box-sizing:border-box;}
+    .hide-scrollbar::-webkit-scrollbar{display:none;}
+    .hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+    body{background:#050505;color:#e4e4e7;font-family:ui-sans-serif,system-ui,sans-serif;overflow-x:hidden;}
+    .glass{background:rgba(18,18,18,0.75);backdrop-filter:blur(12px);}
+    .mobile-frame{border:12px solid #1a1a1a;border-radius:3rem;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.6);}
+    .radar-grid{background-image:linear-gradient(rgba(168,255,120,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(168,255,120,0.04) 1px,transparent 1px);background-size:40px 40px;}
+    .pulse-ring{animation:pulseRing 2s ease-out infinite;}
+    @keyframes pulseRing{0%{transform:scale(0.8);opacity:0.8;}100%{transform:scale(2.2);opacity:0;}}
+    .fade-in{animation:fadeIn 0.3s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+    input[type=text],input[type=number],select,textarea{background:#0d110d;border:1px solid #222622;color:#e4e4e7;border-radius:8px;padding:8px 12px;width:100%;font-size:0.85rem;outline:none;}
+    input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:#a8ff78;}
+    select option{background:#0d110d;}
+    .tab-active{border-bottom:2px solid #a8ff78;color:#fff;}
+    .tab-inactive{border-bottom:2px solid transparent;color:#71717a;}
+  </style>
+  <script>
+    tailwind.config={theme:{extend:{colors:{brand:{black:'#050505',dark:'#0d110d',card:'#121412',border:'#222622',lime:'#a8ff78',limeDark:'#4CAF50',muted:'#71717a',red:'#ef4444',yellow:'#eab308',blue:'#3b82f6'}}}}}
+  </script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ─── ICONS ────────────────────────────────────────────────────────────────────
+const Ico = {
+  Map:      ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  Truck:    ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  Users:    ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  Clock:    ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  List:     ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+  Check:    ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>,
+  Settings: ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  User:     ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Camera:   ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+  Logout:   ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+  Plus:     ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Send:     ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  X:        ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Edit:     ()=><svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Trash:    ()=><svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  Bell:     ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  Photo:    ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+  Timeline: ()=><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+};
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const makeId = () => Math.random().toString(36).slice(2,8).toUpperCase();
+const nowTime = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const todayStr = () => new Date().toLocaleDateString([],{month:'short',day:'numeric'});
+
+// ─── INITIAL DATA ─────────────────────────────────────────────────────────────
+const initialData = {
+  employees: [
+    { id:'e1', name:'Jimmy Hamel',  role:'leader', pin:'1234', clockedIn:false, hoursToday:0, punchLog:[] },
+    { id:'e2', name:'Steve Hamel',  role:'leader', pin:'2345', clockedIn:false, hoursToday:0, punchLog:[] },
+    { id:'e3', name:'Carlos M.',    role:'member', pin:'3456', clockedIn:false, hoursToday:0, punchLog:[] },
+    { id:'e4', name:'Luis G.',      role:'member', pin:'4567', clockedIn:false, hoursToday:0, punchLog:[] },
+    { id:'e5', name:'David R.',     role:'member', pin:'5678', clockedIn:false, hoursToday:0, punchLog:[] },
+    { id:'e6', name:'Marco T.',     role:'member', pin:'6789', clockedIn:false, hoursToday:0, punchLog:[] },
+  ],
+  trucks: [
+    { id:'T01', label:'Truck 01 (F-250)' },
+    { id:'T02', label:'Truck 02 (Bobcat)' },
+    { id:'T03', label:'Truck 03 (Ram 2500)' },
+    { id:'T04', label:'Truck 04 (Trailer)' },
+  ],
+  crews: [
+    {
+      id:'C1', name:'Crew Alpha', truckId:'T01', leaderId:'e1', memberIds:['e3','e4'],
+      status:'base', gpsProgress:0, liveSpeed:0, coords:{x:18,y:72},
+      photos:{before:null,after:null},
+      messages:[{from:'dispatch',text:"Today's first stop: Vanderbilt. Be there by 8 AM.",time:'07:45 AM'}],
+      jobs:[{
+        id:'J1', client:'Vanderbilt Residence', address:'429 Heritage Dr, Wellesley',
+        service:'Estate Maintenance', scheduledTime:'08:00 AM', estimatedEnd:'12:30 PM',
+        arrivedAt:null, completedAt:null,
+        tasks:[
+          {id:'t1',text:'Site inspection & debris clearance',done:false},
+          {id:'t2',text:'Turf management (Zero-turn)',done:false},
+          {id:'t3',text:'Edge defining & hardscape blowout',done:false},
+        ]
+      }]
+    },
+    {
+      id:'C2', name:'Crew Bravo', truckId:'T02', leaderId:'e2', memberIds:['e5'],
+      status:'base', gpsProgress:0, liveSpeed:0, coords:{x:22,y:68},
+      photos:{before:null,after:null}, messages:[],
+      jobs:[{
+        id:'J2', client:'Smith Family', address:'881 Pine Ridge Rd, Natick',
+        service:'Irrigation Repair', scheduledTime:'09:15 AM', estimatedEnd:'10:45 AM',
+        arrivedAt:null, completedAt:null,
+        tasks:[
+          {id:'t4',text:'Inspect irrigation zones',done:false},
+          {id:'t5',text:'Replace broken heads',done:false},
+        ]
+      }]
+    }
+  ],
+  punches:[],
+  isClockedIn:false,
+};
+
+// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
+const BrandLogo = ({ h='h-10' }) => (
+  <div className="flex items-center gap-2">
+    <img src="hamelBros.LandscapingLogo.png" alt="Hamel Bros." className={`${h} w-auto object-contain`}
+      onError={e=>{ e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>
+    <span style={{display:'none'}} className="text-white font-bold text-lg flex">Hamel<span className="text-brand-lime">OS</span></span>
+  </div>
+);
+
+const StatusBadge = ({ status }) => {
+  const map={base:{l:'IDLE',c:'bg-zinc-800 text-zinc-400'},en_route:{l:'EN ROUTE',c:'bg-yellow-900/50 text-yellow-400'},on_site:{l:'ON SITE',c:'bg-brand-lime/20 text-brand-lime'},completed:{l:'COMPLETED',c:'bg-blue-900/30 text-blue-400'}};
+  const s=map[status]||map.base;
+  return <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest ${s.c}`}>{s.l}</span>;
+};
+
+const Modal = ({ title, onClose, children }) => (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{background:'rgba(0,0,0,0.8)'}}>
+    <div className="bg-brand-card border border-brand-border rounded-2xl w-full max-w-lg shadow-2xl fade-in max-h-[90vh] flex flex-col">
+      <div className="flex items-center justify-between p-5 border-b border-brand-border shrink-0">
+        <h3 className="font-bold text-white text-sm uppercase tracking-widest">{title}</h3>
+        <button onClick={onClose} className="text-brand-muted hover:text-white"><Ico.X/></button>
+      </div>
+      <div className="overflow-y-auto hide-scrollbar p-5 flex-1">{children}</div>
+    </div>
+  </div>
+);
+
+// ─── CREW CARD ────────────────────────────────────────────────────────────────
+const CrewCard = ({ crew, employees, trucks, onEdit, onMessage, onSelect, selected }) => {
+  const leader = employees.find(e=>e.id===crew.leaderId);
+  const members = employees.filter(e=>crew.memberIds.includes(e.id));
+  const truck = trucks.find(t=>t.id===crew.truckId);
+  const job = crew.jobs[0];
+  const totalT = job?.tasks.length||0;
+  const doneT = job?.tasks.filter(t=>t.done).length||0;
+  const pct = totalT ? Math.round(doneT/totalT*100) : 0;
+  return (
+    <div onClick={()=>onSelect(crew.id)} className={`bg-brand-card border rounded-xl p-4 cursor-pointer transition-all ${selected?'border-brand-lime shadow-[0_0_12px_rgba(168,255,120,0.15)]':'border-brand-border hover:border-brand-muted'}`}>
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h4 className="font-bold text-white text-sm">{crew.name}</h4>
+          <p className="text-[10px] text-brand-muted mt-0.5">{truck?.label||'—'}</p>
+        </div>
+        <div className="flex items-center gap-1">
+          <StatusBadge status={crew.status}/>
+          <button onClick={e=>{e.stopPropagation();onMessage(crew.id);}} className="text-brand-muted hover:text-brand-lime p-1 ml-1"><Ico.Send/></button>
+          <button onClick={e=>{e.stopPropagation();onEdit(crew.id);}} className="text-brand-muted hover:text-white p-1"><Ico.Edit/></button>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-5 h-5 rounded-full bg-brand-lime/10 border border-brand-lime/30 flex items-center justify-center shrink-0">
+          <span className="text-brand-lime text-[8px] font-bold">L</span>
+        </div>
+        <span className="text-xs text-white font-medium">{leader?.name||'Unassigned'}</span>
+        {members.length>0 && <span className="text-[10px] text-brand-muted">+{members.map(m=>m.name.split(' ')[0]).join(', ')}</span>}
+      </div>
+      {job && <>
+        <p className="text-[10px] text-brand-muted truncate flex items-center gap-1"><span className="inline-block w-3 h-3"><Ico.Map/></span>{job.address}</p>
+        <div className="flex items-center gap-2 mt-2">
+          <div className="flex-1 bg-brand-dark h-1 rounded-full overflow-hidden">
+            <div className="bg-brand-lime h-full transition-all duration-500" style={{width:`${pct}%`}}/>
+          </div>
+          <span className="text-[10px] text-brand-muted font-bold whitespace-nowrap">{doneT}/{totalT}</span>
+        </div>
+      </>}
+      {crew.photos.before && <p className="text-[9px] text-brand-lime mt-1 flex items-center gap-1"><Ico.Check/> Before photo received</p>}
+      {crew.photos.after  && <p className="text-[9px] text-brand-lime mt-0.5 flex items-center gap-1"><Ico.Check/> After photo received</p>}
+    </div>
+  );
+};
+
+// ─── ADMIN PANEL ──────────────────────────────────────────────────────────────
+const AdminPanel = ({ onLogout, appData, setAppData, isDemoMode }) => {
+  const [tab, setTab] = useState('dispatch');
+  const [selectedCrewId, setSelectedCrewId] = useState(appData.crews[0]?.id||null);
+  const [editingCrewId, setEditingCrewId] = useState(null);
+  const [messagingCrewId, setMessagingCrewId] = useState(null);
+  const [msgText, setMsgText] = useState('');
+  const [showAddCrew, setShowAddCrew] = useState(false);
+  const [newCrew, setNewCrew] = useState({name:'',truckId:'',leaderId:'',memberIds:[]});
+  const [showAddJob, setShowAddJob] = useState(false);
+  const [addJobCrewId, setAddJobCrewId] = useState(null);
+  const [newJob, setNewJob] = useState({client:'',address:'',service:'',scheduledTime:'',estimatedEnd:'',tasks:''});
+  const [notifications, setNotifications] = useState([
+    {id:1,text:'Crew Alpha started route',time:'08:02 AM',read:false},
+    {id:2,text:'Before photo from Jimmy (Vanderbilt)',time:'08:41 AM',read:false},
+  ]);
+  const [showNotif, setShowNotif] = useState(false);
+
+  const { employees, trucks, crews } = appData;
+  const selectedCrew = crews.find(c=>c.id===selectedCrewId);
+  const clockedInCount = employees.filter(e=>e.clockedIn).length;
+  const unreadNotif = notifications.filter(n=>!n.read).length;
+  const totalJobs = crews.reduce((a,c)=>a+c.jobs.length,0);
+  const completedJobs = crews.filter(c=>c.status==='completed').length;
+  const activeCrews = crews.filter(c=>c.status!=='base').length;
+
+  const sendMessage = crewId => {
+    if (!msgText.trim()) return;
+    setAppData(prev=>{
+      const next=JSON.parse(JSON.stringify(prev));
+      const c=next.crews.find(x=>x.id===crewId);
+      if(c) c.messages.push({from:'dispatch',text:msgText.trim(),time:nowTime()});
+      return next;
+    });
+    setMsgText(''); setMessagingCrewId(null);
+  };
+
+  const saveCrew = () => {
+    if(!newCrew.name||!newCrew.truckId||!newCrew.leaderId) return;
+    setAppData(prev=>{
+      const next=JSON.parse(JSON.stringify(prev));
+      next.crews.push({id:makeId(),name:newCrew.name,truckId:newCrew.truckId,leaderId:newCrew.leaderId,memberIds:newCrew.memberIds,status:'base',gpsProgress:0,liveSpeed:0,coords:{x:20+Math.random()*20,y:60+Math.random()*20},photos:{before:null,after:null},messages:[],jobs:[]});
+      return next;
+    });
+    setNewCrew({name:'',truckId:'',leaderId:'',memberIds:[]}); setShowAddCrew(false);
+  };
+
+  const saveJob = () => {
+    if(!newJob.client||!newJob.address||!newJob.service) return;
+    setAppData(prev=>{
+      const next=JSON.parse(JSON.stringify(prev));
+      const crew=next.crews.find(c=>c.id===addJobCrewId);
+      if(crew){
+        const taskLines=newJob.tasks.split('\n').filter(Boolean);
+        crew.jobs.push({id:makeId(),client:newJob.client,address:newJob.address,service:newJob.service,scheduledTime:newJob.scheduledTime,estimatedEnd:newJob.estimatedEnd,arrivedAt:null,completedAt:null,tasks:taskLines.map((t,i)=>({id:`t${makeId()}${i}`,text:t.trim(),done:false}))});
+      }
+      return next;
+    });
+    setNewJob({client:'',address:'',service:'',scheduledTime:'',estimatedEnd:'',tasks:''}); setShowAddJob(false); setAddJobCrewId(null);
+  };
+
+  const deleteCrew = crewId => {
+    setAppData(prev=>{const next=JSON.parse(JSON.stringify(prev));next.crews=next.crews.filter(c=>c.id!==crewId);return next;});
+    if(selectedCrewId===crewId) setSelectedCrewId(appData.crews[0]?.id||null);
+  };
+
+  const updateCrewField = (crewId,field,value) => {
+    setAppData(prev=>{const next=JSON.parse(JSON.stringify(prev));const c=next.crews.find(x=>x.id===crewId);if(c)c[field]=value;return next;});
+  };
+
+  const TABS = [
+    {id:'dispatch', label:'Dispatch Board', icon:<Ico.Truck/>},
+    {id:'map',      label:'Live Fleet Map', icon:<Ico.Map/>},
+    {id:'timeclock',label:'Time Clock',     icon:<Ico.Clock/>},
+    {id:'evidence', label:'Evidence Feed',  icon:<Ico.Photo/>},
+    {id:'timeline', label:'Timeline',       icon:<Ico.Timeline/>},
+    {id:'manage',   label:'Manage',         icon:<Ico.Settings/>},
+  ];
+
+  return (
+    <div className="h-full min-h-screen bg-brand-black flex flex-col">
+      {/* TOP NAV */}
+      <header className="shrink-0 bg-brand-black border-b border-brand-border px-4 py-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {!isDemoMode && <button onClick={onLogout} className="text-brand-muted hover:text-white"><Ico.Logout/></button>}
+          <BrandLogo h="h-8"/>
+          <span className="hidden sm:flex items-center gap-1.5 text-[9px] text-brand-muted uppercase tracking-widest font-bold">
+            <span className="w-2 h-2 rounded-full bg-brand-lime animate-pulse"/>ONLINE
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="hidden lg:flex gap-2">
+            <span className="text-[10px] bg-brand-card border border-brand-border px-2.5 py-1 rounded-full text-brand-muted font-bold">Crews: <span className="text-brand-lime">{activeCrews}</span>/{crews.length}</span>
+            <span className="text-[10px] bg-brand-card border border-brand-border px-2.5 py-1 rounded-full text-brand-muted font-bold">Jobs: <span className="text-white">{completedJobs}</span>/{totalJobs}</span>
+            <span className={`text-[10px] bg-brand-card border border-brand-border px-2.5 py-1 rounded-full font-bold ${clockedInCount>0?'text-brand-lime':'text-brand-muted'}`}>Clocked In: {clockedInCount}/{employees.length}</span>
+          </div>
+          <div className="relative">
+            <button onClick={()=>setShowNotif(!showNotif)} className="text-brand-muted hover:text-white relative p-1">
+              <Ico.Bell/>
+              {unreadNotif>0 && <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[8px] flex items-center justify-center font-bold">{unreadNotif}</span>}
+            </button>
+            {showNotif && (
+              <div className="absolute right-0 top-9 w-72 bg-brand-card border border-brand-border rounded-xl shadow-2xl z-50 fade-in">
+                <div className="p-3 border-b border-brand-border flex items-center justify-between">
+                  <span className="text-xs font-bold text-white uppercase tracking-widest">Notifications</span>
+                  <button onClick={()=>{setNotifications(n=>n.map(x=>({...x,read:true})));setShowNotif(false);}} className="text-[10px] text-brand-lime">Mark all read</button>
+                </div>
+                <div className="max-h-56 overflow-y-auto hide-scrollbar">
+                  {notifications.map(n=>(
+                    <div key={n.id} className={`p-3 border-b border-brand-border/40 text-xs ${n.read?'text-brand-muted':'text-white'}`}>
+                      <p className="font-medium">{n.text}</p>
+                      <p className="text-brand-muted text-[10px] mt-0.5">{n.time}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* TABS */}
+      <div className="shrink-0 bg-brand-dark border-b border-brand-border flex overflow-x-auto hide-scrollbar">
+        {TABS.map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)}
+            className={`flex items-center gap-2 px-4 py-3 text-[11px] font-bold whitespace-nowrap transition-colors shrink-0 ${tab===t.id?'tab-active':'tab-inactive hover:text-zinc-300'}`}>
+            {t.icon}<span className="hidden sm:inline">{t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* CONTENT */}
+      <div className="flex-1 overflow-hidden">
+
+        {/* ══ DISPATCH BOARD ══ */}
+        {tab==='dispatch' && (
+          <div className="h-full flex overflow-hidden">
+            {/* Crew list */}
+            <div className="w-full lg:w-80 xl:w-96 shrink-0 border-r border-brand-border flex flex-col">
+              <div className="p-4 border-b border-brand-border flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-white">Crews ({crews.length})</h3>
+                <button onClick={()=>setShowAddCrew(true)} className="flex items-center gap-1 text-brand-lime text-xs font-bold hover:opacity-80"><Ico.Plus/> New Crew</button>
+              </div>
+              <div className="flex-1 overflow-y-auto hide-scrollbar p-3 space-y-3">
+                {crews.map(crew=>(
+                  <CrewCard key={crew.id} crew={crew} employees={employees} trucks={trucks}
+                    onEdit={setEditingCrewId} onMessage={setMessagingCrewId}
+                    onSelect={setSelectedCrewId} selected={selectedCrewId===crew.id}/>
+                ))}
+                {crews.length===0 && <p className="text-brand-muted text-xs text-center py-8">No crews yet.</p>}
+              </div>
+            </div>
+            {/* Detail panel */}
+            <div className="flex-1 overflow-y-auto hide-scrollbar p-4 lg:p-6">
+              {selectedCrew ? (
+                <div className="max-w-2xl space-y-5 fade-in">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">{selectedCrew.name}</h2>
+                      <p className="text-brand-muted text-xs mt-0.5">{trucks.find(t=>t.id===selectedCrew.truckId)?.label} · Lead: {employees.find(e=>e.id===selectedCrew.leaderId)?.name||'—'}</p>
+                    </div>
+                    <StatusBadge status={selectedCrew.status}/>
+                  </div>
+
+                  {/* Jobs */}
+                  <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                    <div className="p-4 border-b border-brand-border flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-white">Today's Jobs</h4>
+                      <button onClick={()=>{setAddJobCrewId(selectedCrew.id);setShowAddJob(true);}} className="flex items-center gap-1 text-brand-lime text-xs font-bold hover:opacity-80"><Ico.Plus/> Add Job</button>
+                    </div>
+                    <div className="divide-y divide-brand-border">
+                      {selectedCrew.jobs.map(job=>{
+                        const total=job.tasks.length; const done=job.tasks.filter(t=>t.done).length;
+                        const pct=total?Math.round(done/total*100):0;
+                        return (
+                          <div key={job.id} className="p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <p className="font-bold text-white text-sm">{job.client}</p>
+                                <p className="text-[10px] text-brand-muted">{job.address}</p>
+                                <p className="text-[10px] text-brand-lime">{job.service}</p>
+                              </div>
+                              <div className="text-right text-[10px] text-brand-muted">
+                                <p>🕐 {job.scheduledTime}</p>
+                                {job.arrivedAt && <p className="text-brand-lime">Arrived {job.arrivedAt}</p>}
+                                {job.completedAt && <p className="text-blue-400">Done {job.completedAt}</p>}
+                              </div>
+                            </div>
+                            {total>0 && (
+                              <>
+                                <div className="flex justify-between text-[10px] text-brand-muted mb-1"><span>Progress</span><span>{pct}%</span></div>
+                                <div className="w-full bg-brand-dark h-1.5 rounded-full overflow-hidden mb-2">
+                                  <div className="bg-brand-lime h-full transition-all duration-500" style={{width:`${pct}%`}}/>
+                                </div>
+                                <div className="space-y-1">
+                                  {job.tasks.map(task=>(
+                                    <div key={task.id} className="flex items-center gap-2 text-xs">
+                                      <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${task.done?'bg-brand-lime border-brand-lime':'border-brand-border'}`}>
+                                        {task.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#050505" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                                      </div>
+                                      <span className={task.done?'text-brand-muted line-through':'text-zinc-300'}>{task.text}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {selectedCrew.jobs.length===0 && <p className="text-brand-muted text-xs p-4">No jobs assigned.</p>}
+                    </div>
+                  </div>
+
+                  {/* Messages */}
+                  <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                    <div className="p-4 border-b border-brand-border flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-white">Crew Communications</h4>
+                      <button onClick={()=>setMessagingCrewId(selectedCrew.id)} className="text-brand-lime text-xs font-bold flex items-center gap-1"><Ico.Send/> Send</button>
+                    </div>
+                    <div className="p-3 max-h-48 overflow-y-auto hide-scrollbar space-y-2">
+                      {selectedCrew.messages.length===0 && <p className="text-brand-muted text-xs">No messages yet.</p>}
+                      {selectedCrew.messages.map((m,i)=>(
+                        <div key={i} className={`flex ${m.from==='dispatch'?'justify-end':'justify-start'}`}>
+                          <div className={`max-w-[75%] px-3 py-2 rounded-xl text-xs ${m.from==='dispatch'?'bg-brand-lime/20 text-brand-lime rounded-tr-none':'bg-brand-dark text-white rounded-tl-none'}`}>
+                            <p>{m.text}</p>
+                            <p className="text-[9px] opacity-60 mt-1">{m.time} · {m.from==='dispatch'?'Dispatch':employees.find(e=>e.id===selectedCrew.leaderId)?.name}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-brand-muted text-sm">Select a crew</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══ LIVE FLEET MAP ══ */}
+        {tab==='map' && (
+          <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto hide-scrollbar">
+            <div className="relative flex-1 min-h-72 bg-[#0d150d] rounded-xl border border-brand-border radar-grid overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {[400,280,160,80].map(s=><div key={s} className="absolute border border-brand-lime/5 rounded-full" style={{width:s,height:s}}/>)}
+              </div>
+              <div className="absolute top-3 left-3 bg-brand-card/90 border border-brand-border rounded-lg px-3 py-2">
+                <p className="text-[9px] uppercase text-brand-lime font-bold tracking-widest">Metro West — Live Radar</p>
+                <p className="text-[9px] text-brand-muted mt-0.5">{todayStr()} · {nowTime()}</p>
+              </div>
+              <div className="absolute bottom-3 right-3 bg-brand-card/90 border border-brand-border rounded-lg px-3 py-2 space-y-1">
+                <div className="flex items-center gap-2 text-[9px] text-brand-muted"><span className="w-3 h-3 rounded border-2 border-brand-lime inline-block"/><span>Active crew</span></div>
+                <div className="flex items-center gap-2 text-[9px] text-brand-muted"><span className="w-3 h-3 rounded border-2 border-zinc-600 inline-block"/><span>Idle crew</span></div>
+              </div>
+              {crews.map(crew=>{
+                const leader=employees.find(e=>e.id===crew.leaderId);
+                const active=crew.status!=='base';
+                return (
+                  <div key={crew.id} className="absolute flex flex-col items-center z-10 cursor-pointer group transition-all duration-1000 ease-linear"
+                    style={{left:`${crew.coords.x}%`,top:`${crew.coords.y}%`,transform:'translate(-50%,-50%)'}}
+                    onClick={()=>{setSelectedCrewId(crew.id);setTab('dispatch');}}>
+                    {crew.status==='en_route' && <div className="absolute w-8 h-8 rounded-xl border-2 border-brand-lime pulse-ring opacity-40"/>}
+                    <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center font-bold text-sm z-10 transition-all ${active?'border-brand-lime text-brand-lime bg-brand-black shadow-[0_0_14px_rgba(168,255,120,0.25)]':'border-zinc-700 text-zinc-500 bg-brand-black'}`}>
+                      {crew.name.charAt(5)}
+                    </div>
+                    {crew.status==='on_site' && <div className="w-0.5 h-4 bg-brand-lime"/>}
+                    <div className="hidden group-hover:block absolute top-12 left-1/2 -translate-x-1/2 bg-brand-card border border-brand-border rounded-lg px-3 py-2 whitespace-nowrap z-20 shadow-xl text-left">
+                      <p className="text-[10px] font-bold text-white">{crew.name}</p>
+                      <p className="text-[9px] text-brand-muted">{leader?.name}</p>
+                      {crew.status==='en_route' && <p className="text-[9px] text-yellow-400">{crew.liveSpeed} MPH</p>}
+                      <p className="text-[9px] text-brand-lime">{crew.jobs[0]?.address||'—'}</p>
+                    </div>
+                    {crew.status==='en_route' && <span className="mt-1 bg-brand-dark border border-brand-border text-yellow-400 text-[8px] px-2 py-0.5 font-bold uppercase">{crew.liveSpeed}MPH</span>}
+                    {crew.status==='on_site'  && <span className="bg-brand-dark border border-brand-lime text-brand-lime text-[8px] px-2 py-0.5 font-bold uppercase">WORKING</span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+              {crews.map(crew=>{
+                const leader=employees.find(e=>e.id===crew.leaderId);
+                const truck=trucks.find(t=>t.id===crew.truckId);
+                return (
+                  <div key={crew.id} className="bg-brand-card border border-brand-border rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-white">{crew.name}</span>
+                      <StatusBadge status={crew.status}/>
+                    </div>
+                    <p className="text-[10px] text-brand-muted">{truck?.label||'—'}</p>
+                    <p className="text-[10px] text-brand-lime mt-0.5">{leader?.name||'—'}</p>
+                    {crew.status==='en_route' && <p className="text-[10px] text-yellow-400 mt-0.5 font-bold">{crew.liveSpeed} MPH</p>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ══ TIME CLOCK OVERVIEW ══ */}
+        {tab==='timeclock' && (
+          <div className="h-full overflow-y-auto hide-scrollbar p-4 lg:p-6">
+            <div className="max-w-3xl mx-auto space-y-5">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-brand-card border border-brand-border rounded-xl p-4 text-center">
+                  <p className="text-3xl font-bold text-brand-lime">{employees.filter(e=>e.clockedIn).length}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-brand-muted mt-1">Clocked In</p>
+                </div>
+                <div className="bg-brand-card border border-brand-border rounded-xl p-4 text-center">
+                  <p className="text-3xl font-bold text-zinc-400">{employees.filter(e=>!e.clockedIn).length}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-brand-muted mt-1">Clocked Out</p>
+                </div>
+                <div className="bg-brand-card border border-brand-border rounded-xl p-4 text-center">
+                  <p className="text-3xl font-bold text-white">{employees.length}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-brand-muted mt-1">Total Staff</p>
+                </div>
+              </div>
+              <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                <div className="p-4 border-b border-brand-border">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white">Staff Time Tracker — {todayStr()}</h4>
+                </div>
+                <div className="divide-y divide-brand-border">
+                  {employees.map(emp=>{
+                    const crew=crews.find(c=>c.leaderId===emp.id||c.memberIds.includes(emp.id));
+                    return (
+                      <div key={emp.id} className="p-4 flex items-center gap-4">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${emp.clockedIn?'bg-brand-lime/10 border border-brand-lime/40 text-brand-lime':'bg-zinc-900 border border-zinc-800 text-zinc-500'}`}>
+                          {emp.name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-sm text-white">{emp.name}</p>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${emp.role==='leader'?'bg-brand-lime/10 text-brand-lime':'bg-zinc-800 text-zinc-400'}`}>{emp.role}</span>
+                          </div>
+                          <p className="text-[10px] text-brand-muted mt-0.5">{crew?crew.name:'Unassigned'}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <span className={`w-2 h-2 rounded-full ${emp.clockedIn?'bg-brand-lime animate-pulse':'bg-red-500'}`}/>
+                            <span className={`text-xs font-bold ${emp.clockedIn?'text-brand-lime':'text-zinc-500'}`}>{emp.clockedIn?'ON CLOCK':'OFF CLOCK'}</span>
+                          </div>
+                          <p className="text-[10px] text-brand-muted mt-1">{emp.hoursToday.toFixed(1)}h today</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                <div className="p-4 border-b border-brand-border">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white">Today's Punch Log</h4>
+                </div>
+                <div className="p-3 space-y-2 max-h-56 overflow-y-auto hide-scrollbar">
+                  {appData.punches.length===0 && <p className="text-brand-muted text-xs">No punches yet.</p>}
+                  {appData.punches.map((p,i)=>(
+                    <div key={i} className="flex items-center gap-3 text-xs">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold shrink-0 ${p.type==='in'?'bg-brand-lime/20 text-brand-lime':'bg-red-900/30 text-red-400'}`}>{p.type==='in'?'+':'−'}</div>
+                      <span className="font-medium text-white flex-1">{p.name} — clocked {p.type}</span>
+                      <span className="text-brand-muted">{p.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ EVIDENCE FEED ══ */}
+        {tab==='evidence' && (
+          <div className="h-full overflow-y-auto hide-scrollbar p-4 lg:p-6">
+            <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {crews.map(crew=>{
+                const leader=employees.find(e=>e.id===crew.leaderId);
+                const job=crew.jobs[0];
+                return (
+                  <div key={crew.id} className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                    <div className="p-3 border-b border-brand-border flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-white">{crew.name}</p>
+                        <p className="text-[10px] text-brand-muted">{job?.client||'No job'}</p>
+                      </div>
+                      <StatusBadge status={crew.status}/>
+                    </div>
+                    <div className="grid grid-cols-2 divide-x divide-brand-border">
+                      {['before','after'].map(type=>(
+                        <div key={type} className="p-3">
+                          <p className="text-[9px] uppercase tracking-widest text-brand-muted font-bold mb-2">{type}</p>
+                          {crew.photos[type] ? (
+                            <div>
+                              <img src={type==='before'?'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=80':'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=200&q=80'} alt={type} className="w-full h-24 object-cover rounded-lg"/>
+                              <p className="text-[9px] text-brand-lime mt-1 flex items-center gap-1"><Ico.Check/> From {leader?.name}</p>
+                            </div>
+                          ) : (
+                            <div className="w-full h-24 bg-brand-dark rounded-lg flex items-center justify-center border border-dashed border-brand-border">
+                              <p className="text-[10px] text-brand-muted text-center">Awaiting<br/>photo</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ══ TIMELINE ══ */}
+        {tab==='timeline' && (
+          <div className="h-full overflow-y-auto hide-scrollbar p-4 lg:p-6">
+            <div className="max-w-3xl mx-auto space-y-5">
+              {crews.map(crew=>{
+                const leader=employees.find(e=>e.id===crew.leaderId);
+                const si=['base','en_route','on_site','completed'].indexOf(crew.status);
+                const steps=[
+                  {label:'Scheduled',       sub:crew.jobs[0]?.scheduledTime||'—',       done:true},
+                  {label:'Crew Departed',   sub:si>=1?'Departed':'Pending',              done:si>=1},
+                  {label:'Arrived On Site', sub:crew.jobs[0]?.arrivedAt||'Pending',      done:si>=2},
+                  {label:'Work in Progress',sub:si===2?'Active now':si===3?'Done':'Pending', done:si>=2},
+                  {label:'Photos Submitted',sub:crew.photos.before&&crew.photos.after?'Both received':'Pending', done:!!(crew.photos.before&&crew.photos.after)},
+                  {label:'Job Completed',   sub:crew.jobs[0]?.completedAt||'Pending',   done:si===3},
+                ];
+                const lastDone=steps.filter(s=>s.done).length-1;
+                return (
+                  <div key={crew.id} className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                    <div className="p-4 border-b border-brand-border flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{crew.name} — {crew.jobs[0]?.client||'No job'}</h4>
+                        <p className="text-[10px] text-brand-muted mt-0.5">Lead: {leader?.name} · {crew.jobs[0]?.address}</p>
+                      </div>
+                      <StatusBadge status={crew.status}/>
+                    </div>
+                    <div className="p-5">
+                      <div className="relative pl-6 border-l-2 border-brand-border space-y-5">
+                        {steps.map((step,i)=>(
+                          <div key={i} className="relative">
+                            <div className={`absolute -left-[29px] w-4 h-4 rounded-full border-4 border-brand-black transition-colors ${step.done?'bg-brand-lime':'bg-brand-dark border-brand-border'} ${step.done&&i===lastDone?'ring-2 ring-brand-lime/40':''}`}/>
+                            <div className="flex items-center justify-between">
+                              <span className={`text-sm font-medium ${step.done?'text-white':'text-brand-muted'}`}>{step.label}</span>
+                              <span className={`text-[10px] font-bold ${step.done?'text-brand-lime':'text-brand-muted'}`}>{step.sub}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ══ MANAGE ══ */}
+        {tab==='manage' && (
+          <div className="h-full overflow-y-auto hide-scrollbar p-4 lg:p-6">
+            <div className="max-w-3xl mx-auto space-y-6">
+              <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                <div className="p-4 border-b border-brand-border flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white">Team Roster</h4>
+                  <span className="text-[10px] text-brand-muted">{employees.length} members</span>
+                </div>
+                <div className="divide-y divide-brand-border">
+                  {employees.map(emp=>{
+                    const crew=crews.find(c=>c.leaderId===emp.id||c.memberIds.includes(emp.id));
+                    return (
+                      <div key={emp.id} className="p-4 flex items-center gap-4">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 border ${emp.role==='leader'?'border-brand-lime/50 text-brand-lime bg-brand-lime/5':'border-brand-border text-zinc-400 bg-brand-dark'}`}>
+                          {emp.name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-sm text-white">{emp.name}</p>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${emp.role==='leader'?'bg-brand-lime/10 text-brand-lime':'bg-zinc-800 text-zinc-400'}`}>{emp.role}</span>
+                          </div>
+                          <p className="text-[10px] text-brand-muted mt-0.5">PIN: {emp.pin} · {crew?crew.name:'Unassigned'}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`w-2 h-2 rounded-full ${emp.clockedIn?'bg-brand-lime animate-pulse':'bg-zinc-700'}`}/>
+                          <span className="text-[10px] text-brand-muted">{emp.clockedIn?'In':'Out'}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+                <div className="p-4 border-b border-brand-border">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white">Fleet Registry</h4>
+                </div>
+                <div className="divide-y divide-brand-border">
+                  {trucks.map(truck=>{
+                    const assigned=crews.find(c=>c.truckId===truck.id);
+                    return (
+                      <div key={truck.id} className="p-4 flex items-center gap-4">
+                        <div className="w-9 h-9 rounded-xl bg-brand-dark border border-brand-border flex items-center justify-center text-brand-muted shrink-0"><Ico.Truck/></div>
+                        <div className="flex-1">
+                          <p className="font-bold text-sm text-white">{truck.label}</p>
+                          <p className="text-[10px] text-brand-muted mt-0.5">{assigned?`Assigned → ${assigned.name}`:'Available'}</p>
+                        </div>
+                        <div className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase ${assigned?'bg-brand-lime/10 text-brand-lime':'bg-zinc-800 text-zinc-500'}`}>
+                          {assigned?'IN USE':'IDLE'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── MODALS ── */}
+      {messagingCrewId && (()=>{
+        const crew=crews.find(c=>c.id===messagingCrewId);
+        const leader=employees.find(e=>e.id===crew?.leaderId);
+        return (
+          <Modal title={`Message → ${crew?.name}`} onClose={()=>setMessagingCrewId(null)}>
+            <p className="text-[10px] text-brand-muted mb-3">Leader: {leader?.name}. Message shows instantly on their device.</p>
+            <textarea rows="3" value={msgText} onChange={e=>setMsgText(e.target.value)} placeholder="Type your message..." className="mb-3 resize-none"/>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {['Head to next job ASAP','Client is waiting','Take before photo now','Good work, wrap it up'].map(q=>(
+                <button key={q} onClick={()=>setMsgText(q)} className="text-left text-[10px] bg-brand-dark border border-brand-border rounded-lg p-2 text-brand-muted hover:text-white hover:border-brand-muted transition-colors">"{q}"</button>
+              ))}
+            </div>
+            <button onClick={()=>sendMessage(messagingCrewId)} className="w-full bg-brand-lime text-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90"><Ico.Send/> Send Message</button>
+          </Modal>
+        );
+      })()}
+
+      {showAddCrew && (
+        <Modal title="Create New Crew" onClose={()=>setShowAddCrew(false)}>
+          <div className="space-y-3">
+            <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Crew Name</label>
+              <input type="text" value={newCrew.name} onChange={e=>setNewCrew({...newCrew,name:e.target.value})} placeholder="e.g. Crew Charlie"/></div>
+            <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Assign Truck</label>
+              <select value={newCrew.truckId} onChange={e=>setNewCrew({...newCrew,truckId:e.target.value})}>
+                <option value="">Select truck...</option>
+                {trucks.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}
+              </select></div>
+            <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Crew Leader</label>
+              <select value={newCrew.leaderId} onChange={e=>setNewCrew({...newCrew,leaderId:e.target.value})}>
+                <option value="">Select leader...</option>
+                {employees.filter(e=>e.role==='leader').map(e=><option key={e.id} value={e.id}>{e.name}</option>)}
+              </select></div>
+            <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Crew Members</label>
+              {employees.filter(e=>e.role==='member').map(e=>(
+                <label key={e.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-brand-dark cursor-pointer">
+                  <input type="checkbox" checked={newCrew.memberIds.includes(e.id)} className="accent-brand-lime"
+                    onChange={ev=>setNewCrew(prev=>({...prev,memberIds:ev.target.checked?[...prev.memberIds,e.id]:prev.memberIds.filter(x=>x!==e.id)}))}/>
+                  <span className="text-sm text-white">{e.name}</span>
+                </label>
+              ))}</div>
+            <button onClick={saveCrew} className="w-full bg-brand-lime text-black font-bold py-3 rounded-xl mt-1 hover:opacity-90">Create Crew</button>
+          </div>
+        </Modal>
+      )}
+
+      {showAddJob && (
+        <Modal title="Add Job" onClose={()=>{setShowAddJob(false);setAddJobCrewId(null);}}>
+          <div className="space-y-3">
+            {[['client','Client Name','e.g. Johnson Family'],['address','Address','e.g. 123 Oak St, Natick'],['service','Service Type','e.g. Spring Cleanup'],['scheduledTime','Start Time','e.g. 10:00 AM'],['estimatedEnd','End Time','e.g. 12:00 PM']].map(([f,l,ph])=>(
+              <div key={f}><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">{l}</label>
+                <input type="text" value={newJob[f]} onChange={e=>setNewJob({...newJob,[f]:e.target.value})} placeholder={ph}/></div>
+            ))}
+            <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Tasks (one per line)</label>
+              <textarea rows="4" value={newJob.tasks} onChange={e=>setNewJob({...newJob,tasks:e.target.value})} placeholder={"Mow lawn\nEdge walkways\nBlow debris"} className="resize-none"/></div>
+            <button onClick={saveJob} className="w-full bg-brand-lime text-black font-bold py-3 rounded-xl hover:opacity-90">Add Job</button>
+          </div>
+        </Modal>
+      )}
+
+      {editingCrewId && (()=>{
+        const crew=crews.find(c=>c.id===editingCrewId);
+        if(!crew) return null;
+        return (
+          <Modal title={`Edit — ${crew.name}`} onClose={()=>setEditingCrewId(null)}>
+            <div className="space-y-3">
+              <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Crew Name</label>
+                <input type="text" value={crew.name} onChange={e=>updateCrewField(editingCrewId,'name',e.target.value)}/></div>
+              <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Truck</label>
+                <select value={crew.truckId} onChange={e=>updateCrewField(editingCrewId,'truckId',e.target.value)}>
+                  {trucks.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}
+                </select></div>
+              <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Leader</label>
+                <select value={crew.leaderId} onChange={e=>updateCrewField(editingCrewId,'leaderId',e.target.value)}>
+                  <option value="">None</option>
+                  {employees.filter(e=>e.role==='leader').map(e=><option key={e.id} value={e.id}>{e.name}</option>)}
+                </select></div>
+              <div><label className="text-[10px] uppercase tracking-widest text-brand-muted font-bold block mb-1">Members</label>
+                {employees.filter(e=>e.role==='member').map(e=>(
+                  <label key={e.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-brand-dark cursor-pointer">
+                    <input type="checkbox" checked={crew.memberIds.includes(e.id)} className="accent-brand-lime"
+                      onChange={ev=>{const ids=ev.target.checked?[...crew.memberIds,e.id]:crew.memberIds.filter(x=>x!==e.id);updateCrewField(editingCrewId,'memberIds',ids);}}/>
+                    <span className="text-sm text-white">{e.name}</span>
+                  </label>
+                ))}</div>
+              <div className="flex gap-2 pt-1">
+                <button onClick={()=>setEditingCrewId(null)} className="flex-1 bg-brand-lime text-black font-bold py-3 rounded-xl hover:opacity-90">Save</button>
+                <button onClick={()=>{deleteCrew(editingCrewId);setEditingCrewId(null);}} className="px-4 py-3 rounded-xl bg-red-900/30 border border-red-900 text-red-400 font-bold hover:bg-red-900/50 transition-colors"><Ico.Trash/></button>
+              </div>
+            </div>
+          </Modal>
+        );
+      })()}
+    </div>
+  );
+};
+
+// ─── LEADER PANEL ─────────────────────────────────────────────────────────────
+const LeaderPanel = ({ onLogout, appData, setAppData, isDemoMode }) => {
+  const crew = appData.crews[0];
+  const job  = crew?.jobs[0];
+
+  const toggleTask = taskId => {
+    setAppData(prev=>{
+      const next=JSON.parse(JSON.stringify(prev));
+      const t=next.crews[0].jobs[0]?.tasks.find(x=>x.id===taskId);
+      if(t) t.done=!t.done;
+      return next;
+    });
+  };
+
+  const changeStatus = s => {
+    setAppData(prev=>{
+      const next=JSON.parse(JSON.stringify(prev));
+      const c=next.crews[0];
+      c.status=s;
+      if(s==='on_site'&&c.jobs[0])   c.jobs[0].arrivedAt=nowTime();
+      if(s==='completed'&&c.jobs[0]) c.jobs[0].completedAt=nowTime();
+      if(s==='base'){c.photos={before:null,after:null};c.gpsProgress=0;if(c.jobs[0]){c.jobs[0].tasks.forEach(t=>t.done=false);c.jobs[0].arrivedAt=null;c.jobs[0].completedAt=null;}}
+      return next;
+    });
+  };
+
+  const togglePhoto = type => {
+    setAppData(prev=>{const next=JSON.parse(JSON.stringify(prev));next.crews[0].photos[type]=true;return next;});
+  };
+
+  if(!crew||!job) return <div className="flex items-center justify-center h-full text-brand-muted">No job assigned</div>;
+
+  const totalT=job.tasks.length; const doneT=job.tasks.filter(t=>t.done).length;
+
+  return (
+    <div className={`w-full h-full bg-brand-card flex flex-col relative overflow-hidden ${!isDemoMode&&'min-h-screen sm:h-[850px] max-w-md mx-auto sm:border-8 sm:border-brand-border sm:rounded-[2.5rem]'}`}>
+      <header className="p-4 flex justify-between items-center bg-brand-black shrink-0 border-b border-brand-border z-10">
+        <div>
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            {!isDemoMode&&<button onClick={onLogout} className="text-brand-muted hover:text-white"><Ico.Logout/></button>}
+            JOB #{job.id}
+          </h2>
+          <p className="text-[10px] text-brand-muted ml-6">{job.scheduledTime} · {job.client}</p>
+        </div>
+        <StatusBadge status={crew.status}/>
+      </header>
+
+      <div className="flex-1 overflow-y-auto pb-32 bg-brand-black hide-scrollbar">
+        {crew.messages.length>0 && (
+          <div className="mx-4 mt-3 bg-yellow-900/20 border border-yellow-800/50 rounded-xl p-3">
+            <p className="text-[9px] uppercase tracking-widest text-yellow-500 font-bold mb-1">📣 Dispatch</p>
+            <p className="text-xs text-white">{crew.messages[crew.messages.length-1].text}</p>
+            <p className="text-[9px] text-brand-muted mt-0.5">{crew.messages[crew.messages.length-1].time}</p>
+          </div>
+        )}
+        <div className="p-4 space-y-4">
+          <div className="bg-brand-card border border-brand-border rounded-xl p-4">
+            <p className="text-[10px] text-brand-muted uppercase tracking-widest mb-1">{job.service}</p>
+            <h3 className="text-lg font-bold text-white">{job.client}</h3>
+            <p className="text-[10px] text-brand-muted mt-1">{job.address}</p>
+          </div>
+          {totalT>0 && (
+            <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-brand-border flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-widest text-brand-muted font-bold">Execution Protocol</span>
+                <span className="text-[10px] text-brand-lime font-bold">{doneT}/{totalT}</span>
+              </div>
+              <div className="p-2">
+                {job.tasks.map(task=>(
+                  <button key={task.id} onClick={()=>toggleTask(task.id)}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-brand-dark rounded-lg transition-colors text-left group">
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${task.done?'bg-brand-lime border-brand-lime':'border-brand-border group-hover:border-brand-muted'}`}>
+                      {task.done&&<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#050505" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                    </div>
+                    <span className={`text-sm ${task.done?'text-brand-muted line-through':'text-white'}`}>{task.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {crew.status==='on_site' && (
+            <div className="bg-brand-card border border-brand-border rounded-xl p-3 grid grid-cols-2 gap-2">
+              <button onClick={()=>togglePhoto('before')} className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-colors ${crew.photos.before?'border-brand-lime text-brand-lime bg-brand-lime/5':'border-brand-border text-brand-muted'}`}>
+                {crew.photos.before?<Ico.Check/>:<Ico.Camera/>}<span className="text-[10px] font-bold">Before Photo</span>
+              </button>
+              <button onClick={()=>togglePhoto('after')} disabled={!crew.photos.before}
+                className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-colors ${!crew.photos.before?'opacity-30 cursor-not-allowed border-brand-border':crew.photos.after?'border-brand-lime text-brand-lime bg-brand-lime/5':'border-brand-border text-white'}`}>
+                {crew.photos.after?<Ico.Check/>:<Ico.Camera/>}<span className="text-[10px] font-bold">After Photo</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="absolute bottom-16 w-full p-4 bg-gradient-to-t from-brand-black via-brand-black/90 to-transparent z-20">
+        {crew.status==='base'      && <button onClick={()=>changeStatus('en_route')} className="w-full bg-[#1a4d1a] border border-[#236b23] text-white font-bold py-4 rounded-xl active:scale-95 transition-transform">START ROUTE</button>}
+        {crew.status==='en_route'  && <button onClick={()=>changeStatus('on_site')} className="w-full bg-brand-lime text-black font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(168,255,120,0.2)] active:scale-95 transition-transform">ARRIVE ON SITE</button>}
+        {crew.status==='on_site'   && <button onClick={()=>changeStatus('completed')} disabled={!crew.photos.after} className={`w-full font-bold py-4 rounded-xl active:scale-95 transition-transform ${crew.photos.after?'bg-brand-lime text-black':'bg-brand-dark border border-brand-border text-brand-muted cursor-not-allowed'}`}>COMPLETE & SIGN OFF</button>}
+        {crew.status==='completed' && <button onClick={()=>changeStatus('base')} className="w-full bg-zinc-800 text-white font-bold py-4 rounded-xl active:scale-95 transition-transform">LOAD NEXT JOB</button>}
+      </div>
+
+      <div className="absolute bottom-0 w-full bg-brand-black border-t border-brand-border flex justify-around items-center h-16 z-30">
+        <button className="flex flex-col items-center justify-center w-full h-full text-brand-lime border-t-2 border-brand-lime bg-brand-dark/50"><Ico.List/><span className="text-[8px] font-bold mt-1">JOBS</span></button>
+        <button className="flex flex-col items-center justify-center w-full h-full text-brand-muted"><Ico.Clock/><span className="text-[8px] font-bold mt-1">CLOCK</span></button>
+        <button className="flex flex-col items-center justify-center w-full h-full text-brand-muted"><Ico.User/><span className="text-[8px] font-bold mt-1">PROFILE</span></button>
+      </div>
+    </div>
+  );
+};
+
+// ─── EMPLOYEE PANEL ───────────────────────────────────────────────────────────
+const EmployeePanel = ({ onLogout, appData, setAppData, isDemoMode }) => {
+  const [pin, setPin] = useState('');
+  const [err, setErr] = useState(false);
+  const [currentTime, setCurrentTime] = useState(nowTime());
+  useEffect(()=>{ const iv=setInterval(()=>setCurrentTime(nowTime()),10000); return ()=>clearInterval(iv); },[]);
+
+  const handleKey = n => { if(pin.length<4){setErr(false);setPin(pin+n);} };
+
+  const handleSubmit = () => {
+    if(pin.length!==4) return;
+    const emp=appData.employees.find(e=>e.pin===pin);
+    if(!emp){setErr(true);setPin('');return;}
+    setAppData(prev=>{
+      const next=JSON.parse(JSON.stringify(prev));
+      const e=next.employees.find(x=>x.id===emp.id);
+      const type=e.clockedIn?'out':'in';
+      e.clockedIn=!e.clockedIn;
+      const t=nowTime();
+      e.punchLog.unshift({type,time:t});
+      next.punches.unshift({type,time:t,name:e.name});
+      next.isClockedIn=e.clockedIn;
+      return next;
+    });
+    setPin('');
+  };
+
+  return (
+    <div className={`w-full h-full bg-brand-black flex flex-col ${!isDemoMode&&'min-h-screen sm:h-[850px] max-w-md mx-auto sm:border-8 sm:border-brand-border sm:rounded-[2.5rem]'}`}>
+      <header className="p-4 flex items-center justify-between border-b border-brand-border shrink-0 bg-brand-dark">
+        <h2 className="text-base font-bold text-white flex items-center gap-2">
+          {!isDemoMode&&<button onClick={onLogout} className="text-brand-muted hover:text-white"><Ico.Logout/></button>}
+          Time Clock
+        </h2>
+        <BrandLogo h="h-7"/>
+      </header>
+      <div className="flex-1 flex flex-col items-center p-5 justify-center">
+        <p className="text-[10px] uppercase tracking-widest text-brand-muted font-bold mb-1">Current Time</p>
+        <h1 className="text-5xl font-bold text-brand-lime mb-5">{currentTime}</h1>
+        <div className="bg-brand-card border border-brand-border rounded-full px-4 py-2 flex items-center gap-2 mb-6">
+          <span className={`w-2 h-2 rounded-full ${appData.isClockedIn?'bg-brand-lime animate-pulse':'bg-red-500'}`}/>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-white">{appData.isClockedIn?'ON CLOCK':'OFF CLOCK'}</span>
+        </div>
+        <div className="w-full max-w-[260px]">
+          <div className={`h-14 rounded-xl mb-3 flex items-center justify-center text-2xl tracking-[0.8em] font-mono border-2 text-white ${err?'border-red-500 bg-red-900/20':'border-brand-border bg-black'}`}>
+            {err ? <span className="text-red-400 text-xs tracking-normal font-sans">Invalid PIN</span> : pin.padEnd(4,'•').slice(0,4)}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[1,2,3,4,5,6,7,8,9].map(n=>(
+              <button key={n} onClick={()=>handleKey(String(n))} className="bg-brand-card hover:bg-brand-dark h-11 rounded-xl text-lg font-bold border border-brand-border text-white active:scale-95 transition-transform">{n}</button>
+            ))}
+            <button onClick={()=>{setPin('');setErr(false);}} className="bg-brand-black text-brand-muted h-11 rounded-xl text-xs font-bold border border-brand-border active:scale-95">CLR</button>
+            <button onClick={()=>handleKey('0')} className="bg-brand-card hover:bg-brand-dark h-11 rounded-xl text-lg font-bold border border-brand-border text-white active:scale-95 transition-transform">0</button>
+            <button onClick={handleSubmit} disabled={pin.length!==4}
+              className={`h-11 rounded-xl text-xs font-bold active:scale-95 transition-all ${pin.length===4?'bg-brand-lime text-black shadow-[0_0_14px_rgba(168,255,120,0.3)]':'bg-zinc-900 text-zinc-700 border border-zinc-800 cursor-not-allowed'}`}>
+              {appData.isClockedIn?'OUT':'IN'}
+            </button>
+          </div>
+        </div>
+        <div className="w-full mt-5 max-h-36 overflow-y-auto hide-scrollbar">
+          <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest mb-2">Recent Punches</p>
+          <div className="space-y-1.5">
+            {appData.punches.slice(0,5).map((p,i)=>(
+              <div key={i} className="bg-brand-card border border-brand-border p-2 rounded-lg flex items-center gap-3">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 font-bold text-xs ${p.type==='in'?'bg-brand-lime/20 text-brand-lime':'bg-red-900/30 text-red-400'}`}>{p.type==='in'?'+':'−'}</div>
+                <span className="text-xs text-white flex-1">{p.name} — clocked {p.type}</span>
+                <span className="text-[10px] text-brand-muted">{p.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── CLIENT TRACKER ───────────────────────────────────────────────────────────
+const ClientTracker = ({ onLogout, appData, isDemoMode }) => {
+  const crew=appData.crews[0]; const job=crew?.jobs[0];
+  const si=['base','en_route','on_site','completed'].indexOf(crew?.status||'base');
+  return (
+    <div className={`w-full h-full bg-[#0a0a0a] flex flex-col relative overflow-hidden ${!isDemoMode&&'min-h-screen sm:h-[850px] max-w-md mx-auto sm:border-8 sm:border-brand-border sm:rounded-[2.5rem]'}`}>
+      <header className="bg-[#0d1f0d] p-4 text-center border-b-4 border-brand-lime shrink-0 relative">
+        {!isDemoMode&&<button onClick={onLogout} className="absolute left-4 top-4 text-brand-muted hover:text-white"><Ico.Logout/></button>}
+        <BrandLogo h="h-8"/>
+        <p className="text-[10px] uppercase tracking-widest text-zinc-300 font-semibold mt-1">Live Service Tracker</p>
+      </header>
+      <div className="flex-1 overflow-y-auto p-5 text-white hide-scrollbar">
+        {job ? <>
+          <h2 className="text-xl font-bold mb-1">{job.client}</h2>
+          <p className="text-brand-muted text-xs mb-6">{job.address}</p>
+          <div className="relative pl-5 border-l-2 border-brand-border ml-2 space-y-6">
+            {['Scheduled','On the Way','Work in Progress','Service Completed'].map((label,i)=>(
+              <div key={i} className="relative">
+                <div className={`absolute -left-[21px] w-4 h-4 rounded-full border-4 border-[#0a0a0a] transition-colors ${si>=i?'bg-brand-lime':'bg-brand-border'} ${si===i&&i>0?'animate-pulse':''}`}/>
+                <h4 className={`text-sm font-bold ${si>=i?'text-white':'text-brand-muted'}`}>{label}</h4>
+                {i===1&&si===1&&<p className="text-xs text-brand-lime mt-1">Crew is approaching!</p>}
+                {i===2&&si>=2&&job.tasks.length>0&&(
+                  <div className="mt-2 bg-brand-card border border-brand-border rounded-lg p-3 space-y-1.5">
+                    {job.tasks.map(task=>(
+                      <div key={task.id} className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${task.done?'bg-brand-lime border-brand-lime':'border-brand-border'}`}>
+                          {task.done&&<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#050505" strokeWidth="4"><polyline points="20 6 9 17 4 12"/></svg>}
+                        </div>
+                        <span className={`text-xs ${task.done?'text-brand-muted line-through':'text-white'}`}>{task.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {i===3&&si===3&&crew.photos.after&&(
+                  <div className="mt-2 bg-brand-lime/10 border border-brand-lime/30 rounded-lg p-2">
+                    <p className="text-xs font-bold text-brand-lime mb-2">Final Result</p>
+                    <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400&q=80" className="w-full h-24 object-cover rounded" alt="After"/>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </> : <p className="text-brand-muted text-sm">No active job to track.</p>}
+      </div>
+    </div>
+  );
+};
+
+// ─── SPLIT SCREEN DEMO ────────────────────────────────────────────────────────
+const DemoSplitScreen = ({ onLogout, appData, setAppData }) => {
+  const [right,setRight]=useState('leader');
+  return (
+    <div className="flex w-full h-screen overflow-hidden bg-brand-black">
+      <div className="w-1/2 lg:w-7/12 h-full border-r border-brand-border flex flex-col">
+        <div className="bg-yellow-500 text-black text-[10px] font-bold text-center py-1 uppercase tracking-widest shrink-0">Demo — Dispatcher View</div>
+        <div className="flex-1 overflow-hidden"><AdminPanel appData={appData} setAppData={setAppData} isDemoMode={true}/></div>
+      </div>
+      <div className="w-1/2 lg:w-5/12 h-full bg-[#111] flex flex-col">
+        <div className="bg-yellow-500 text-black text-[10px] font-bold text-center py-1 uppercase tracking-widest flex justify-between px-4 shrink-0">
+          <span>Demo — Mobile View</span>
+          <button onClick={onLogout} className="underline">Exit Demo</button>
+        </div>
+        <div className="flex justify-center gap-2 p-3 bg-brand-black border-b border-brand-border shrink-0">
+          {[['leader','Leader'],['employee','Time Clock'],['client','Client']].map(([v,l])=>(
+            <button key={v} onClick={()=>setRight(v)} className={`px-3 py-1 rounded text-xs font-bold transition-colors ${right===v?'bg-brand-lime text-black':'bg-brand-dark text-brand-muted border border-brand-border'}`}>{l}</button>
+          ))}
+        </div>
+        <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+          <div className="mobile-frame w-[320px] h-[650px] bg-brand-black relative">
+            <div className="absolute top-0 inset-x-0 h-4 bg-[#1a1a1a] rounded-b-xl w-24 mx-auto z-50"/>
+            {right==='leader'   && <LeaderPanel   appData={appData} setAppData={setAppData} isDemoMode={true}/>}
+            {right==='employee' && <EmployeePanel appData={appData} setAppData={setAppData} isDemoMode={true}/>}
+            {right==='client'   && <ClientTracker appData={appData} isDemoMode={true}/>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+const LoginScreen = ({ onSelectRole }) => (
+  <div className="min-h-screen bg-brand-black flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="absolute inset-0 opacity-[0.06]" style={{backgroundImage:'linear-gradient(#1a4d1a 1px,transparent 1px),linear-gradient(90deg,#1a4d1a 1px,transparent 1px)',backgroundSize:'40px 40px'}}/>
+    <div className="bg-brand-card border border-brand-border p-8 rounded-2xl shadow-2xl w-full max-w-sm relative z-10">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-3"><BrandLogo h="h-14"/></div>
+        <p className="text-[10px] text-brand-muted uppercase tracking-[0.2em] font-bold">Field Intelligence V2.4</p>
+      </div>
+      <div className="space-y-3">
+        <button onClick={()=>onSelectRole('demo')}
+          className="w-full text-left p-4 rounded-xl border border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 transition-all flex items-center justify-between">
+          <div>
+            <strong className="block text-yellow-400 font-bold">Split-Screen Demo</strong>
+            <span className="text-[10px] text-yellow-600/70">Admin + Mobile in real-time sync</span>
+          </div>
+          <span className="text-yellow-400 animate-pulse"><Ico.Map/></span>
+        </button>
+        <div className="border-t border-brand-border my-3"/>
+        <p className="text-[10px] uppercase tracking-widest text-brand-muted text-center mb-1">Individual Views</p>
+        {[
+          ['admin',   'Dispatcher / Admin',  'Dispatch board, fleet map & oversight'],
+          ['leader',  'Crew Leader',         'Mobile job management & field app'],
+          ['employee','Crew Member',         'Time clock & PIN punch in/out'],
+          ['client',  'Client Tracker',      'Live service progress (SMS link)'],
+        ].map(([role,label,desc])=>(
+          <button key={role} onClick={()=>onSelectRole(role)} className="w-full text-left p-3 rounded-lg border border-brand-border bg-brand-dark hover:border-brand-muted transition-all">
+            <strong className={`block text-sm font-medium ${role==='client'?'text-brand-lime':'text-white'}`}>{label}</strong>
+            <span className="text-[10px] text-brand-muted">{desc}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ─── APP ROOT ─────────────────────────────────────────────────────────────────
+const App = () => {
+  const [appData, setAppData] = useState(initialData);
+  const [role, setRole] = useState(null);
+
+  // GPS simulation
+  useEffect(()=>{
+    let iv;
+    const hasEnRoute = appData.crews.some(c=>c.status==='en_route');
+    if(hasEnRoute){
+      iv=setInterval(()=>{
+        setAppData(prev=>{
+          const next=JSON.parse(JSON.stringify(prev));
+          next.crews.forEach(c=>{
+            if(c.status==='en_route'&&c.gpsProgress<1){
+              c.gpsProgress=Math.min(1,c.gpsProgress+0.04);
+              c.liveSpeed=Math.floor(Math.random()*15)+28;
+              c.coords.x+=(65-c.coords.x)*0.04;
+              c.coords.y+=(48-c.coords.y)*0.04;
+            }
+          });
+          return next;
+        });
+      },1200);
+    }
+    return ()=>clearInterval(iv);
+  },[appData.crews.map(c=>c.status).join()]);
+
+  return (
+    <React.Fragment>
+      {!role         && <LoginScreen onSelectRole={setRole}/>}
+      {role==='demo' && <DemoSplitScreen onLogout={()=>setRole(null)} appData={appData} setAppData={setAppData}/>}
+      {role==='admin'    && <AdminPanel    onLogout={()=>setRole(null)} appData={appData} setAppData={setAppData} isDemoMode={false}/>}
+      {role==='leader'   && <LeaderPanel   onLogout={()=>setRole(null)} appData={appData} setAppData={setAppData} isDemoMode={false}/>}
+      {role==='employee' && <EmployeePanel onLogout={()=>setRole(null)} appData={appData} setAppData={setAppData} isDemoMode={false}/>}
+      {role==='client'   && <ClientTracker onLogout={()=>setRole(null)} appData={appData} isDemoMode={false}/>}
+    </React.Fragment>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
