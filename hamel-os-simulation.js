@@ -65,12 +65,17 @@
 
   const api = {
     getState() { return clone(state); },
-    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+    subscribe(fn) {
+      if (typeof fn !== 'function') return () => {};
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
     reset() { state = clone(seed); persist(); },
 
     startRoute(crewId = 'crew-alpha') {
-      const crew = patchCrew(crewId, { status: 'EN_ROUTE', speed: 24, progress: Math.max(crewProgress(crewId), 5) });
+      const crew = state.crews.find(c => c.id === crewId);
       if (!crew) return null;
+      patchCrew(crewId, { status: 'EN_ROUTE', speed: 24, progress: Math.max(crew.progress, 5) });
       patchJob(crew.jobId, { status: 'ON_THE_WAY', progress: crew.progress });
       emit(crew.leader, 'ROUTE_STARTED', 'Route started', jobName(crew.jobId));
       persist();
@@ -101,7 +106,7 @@
       const job = state.jobs.find(j => j.id === crew.jobId);
       if (!job) return null;
       const task = job.tasks.find(t => t.id === taskId) || job.tasks.find(t => !t.done);
-      if (!task) return job;
+      if (!task) return clone(job);
       task.done = true;
       const total = job.tasks.length || 1;
       job.progress = Math.round(job.tasks.filter(t => t.done).length / total * 100);
@@ -115,9 +120,11 @@
       const crew = state.crews.find(c => c.id === crewId);
       if (!crew) return null;
       const job = state.jobs.find(j => j.id === crew.jobId);
+      if (!job) return null;
+      const evidence = { id: id('PHOTO'), jobId: crew.jobId, crewId, label, receivedAt: now() };
       emit(crew.leader, 'EVIDENCE_RECEIVED', 'Photo received', job.property + ' · ' + label);
       persist();
-      return { id: id('PHOTO'), jobId: crew.jobId, crewId, label, receivedAt: now() };
+      return evidence;
     },
 
     completeJob(crewId = 'crew-alpha') {
@@ -133,13 +140,14 @@
     },
 
     tick(seconds = 1) {
+      const elapsed = Number.isFinite(Number(seconds)) ? Math.max(0, Number(seconds)) : 1;
       state.crews.forEach(crew => {
         if (crew.status !== 'EN_ROUTE') return;
-        crew.x += 0.9 * seconds;
-        crew.y += 0.18 * seconds;
+        crew.x += 0.9 * elapsed;
+        crew.y += 0.18 * elapsed;
         if (crew.x > 90) crew.x = 10;
         crew.speed = Math.max(18, Math.min(31, crew.speed + (Math.random() - 0.5) * 2));
-        crew.progress = Math.min(95, crew.progress + 0.12 * seconds);
+        crew.progress = Math.min(95, crew.progress + 0.12 * elapsed);
         patchJob(crew.jobId, { progress: Math.round(crew.progress) });
       });
       persist();
@@ -147,16 +155,17 @@
     },
 
     runFullCycle(crewId = 'crew-alpha') {
+      if (!state.crews.some(c => c.id === crewId)) return false;
       this.startRoute(crewId);
       setTimeout(() => this.arrive(crewId), 2200);
       setTimeout(() => this.startJob(crewId), 4200);
       setTimeout(() => this.completeTask(crewId), 6000);
       setTimeout(() => this.uploadEvidence(crewId, 'AFTER'), 7600);
       setTimeout(() => this.completeJob(crewId), 9800);
+      return true;
     }
   };
 
-  function crewProgress(crewId) { const c = state.crews.find(x => x.id === crewId); return c ? c.progress : 0; }
   function jobName(jobId) { const j = state.jobs.find(x => x.id === jobId); return j ? j.property : jobId; }
 
   global.HamelSimulation = api;
