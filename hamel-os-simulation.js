@@ -154,8 +154,6 @@
     }
   };
 
-  // Fleet map presentation + interaction. The map remains a visual simulation,
-  // but behaves like an operations map: pan, zoom, reset, and live-fit controls.
   function ensureFleetMapExperience() {
     if (document.getElementById('hamel-os-fleet-map-style')) return;
     const style = document.createElement('style');
@@ -176,6 +174,7 @@
         .map-layout{grid-template-columns:minmax(0,1fr)!important;width:100%;}
         .map-layout > div:first-child{height:clamp(300px,58vw,430px)!important;min-height:300px;}
         .map-layout > div:nth-child(2){width:100%;}
+        .page{padding-bottom:calc(108px + env(safe-area-inset-bottom))!important;}
       }
       @media (max-width:640px){
         .map-layout > div:first-child{height:clamp(280px,72vw,390px)!important;min-height:280px;}
@@ -183,7 +182,6 @@
         .hamel-map-controls button{width:36px;height:36px;}
         .hamel-map-live{left:9px;bottom:9px;}
       }
-      @media (max-width:900px){.page{padding-bottom:calc(108px + env(safe-area-inset-bottom))!important;}}
     `;
     document.head.appendChild(style);
 
@@ -199,7 +197,6 @@
       const children = Array.from(map.children);
       children.forEach(child => {
         if (child === overlay) return;
-        if (child.classList.contains('hamel-map-controls') || child.classList.contains('hamel-map-live')) return;
         stage.appendChild(child);
       });
       map.insertBefore(stage, map.firstChild);
@@ -231,11 +228,17 @@
       window.addEventListener('resize',()=>{tx=clamp(tx,-map.clientWidth*(scale-1)*.6,map.clientWidth*(scale-1)*.6);ty=clamp(ty,-map.clientHeight*(scale-1)*.6,map.clientHeight*(scale-1)*.6);render();});
       render();
     };
-    const observer = new MutationObserver(enhance);
-    observer.observe(document.body,{childList:true,subtree:true});
-    enhance();
+    const startObserver = () => {
+      if (!document.body) return;
+      const observer = new MutationObserver(enhance);
+      observer.observe(document.body,{childList:true,subtree:true});
+      enhance();
+    };
+    if (document.body) startObserver();
+    else document.addEventListener('DOMContentLoaded', startObserver, {once:true});
   }
-  ensureFleetMapExperience();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureFleetMapExperience, {once:true});
+  else ensureFleetMapExperience();
 
   global.HamelSimulation = api;
 })(window);
