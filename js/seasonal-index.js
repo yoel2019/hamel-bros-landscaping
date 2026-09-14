@@ -16,8 +16,8 @@
     const heroPrimary=document.querySelector('.hero__actions .btn-accent');
     const ctaPrimary=document.querySelector('.cta .btn-accent');
     [heroPrimary,ctaPrimary].forEach(el=>{if(el)el.classList.add('seasonal-highlight','seasonal-highlight--grass')});
-    const cards=[...document.querySelectorAll('.service-grid .service-card')];
-    [cards[0],cards[cards.length-1]].forEach((el,i)=>{if(el)el.classList.add('seasonal-highlight',i?'seasonal-highlight--grass':'seasonal-highlight--grass')});
+    const cards=[...document.querySelectorAll('.section--deep .service-grid .service-card')];
+    [cards[0],cards[cards.length-1]].forEach(el=>{if(el)el.classList.add('seasonal-highlight','seasonal-highlight--grass')});
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
