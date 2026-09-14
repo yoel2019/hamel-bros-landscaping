@@ -1,0 +1,179 @@
+name: Restore Hamel brand and source gallery
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update palette and import original-site photography
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urljoin, urlparse
+          import html as htmlmod
+          import json
+          import re
+          import requests
+          from bs4 import BeautifulSoup
+
+          root = Path('.')
+          css_path = root / 'css' / 'styles.css'
+          css = css_path.read_text(encoding='utf-8')
+
+          replacements = {
+              '--green-950: #102719;':'--green-950: #0a0a0a;',
+              '--green-900: #163321;':'--green-900: #0d1f0d;',
+              '--green-800: #21482f;':'--green-800: #1a4d1a;',
+              '--green-700: #2f6240;':'--green-700: #4CAF50;',
+              '--green-500: #6f963b;':'--green-500: #4CAF50;',
+              '--lime: #bfd85a;':'--lime: #a8ff78;',
+              '--cream: #f4f1e8;':'--cream: #0d1f0d;',
+              '--paper: #fbfaf6;':'--paper: #0a0a0a;',
+              '--ink: #17221a;':'--ink: #ffffff;',
+              '--muted: #647066;':'--muted: #a0a0a0;',
+              '--line: rgba(23,34,26,.12);':'--line: rgba(255,255,255,.12);',
+              '--shadow: 0 22px 70px rgba(16,39,25,.12);':'--shadow: 0 22px 70px rgba(0,0,0,.35);',
+              'background:rgba(251,250,246,.96);':'background:rgba(10,10,10,.96);',
+              'color:#304035;':'color:#e0e0e0;',
+              'color:#516057;':'color:#a0a0a0;',
+              'color:#405048;':'color:#e0e0e0;',
+              'background:rgba(255,255,255,.66);':'background:rgba(42,42,42,.88);',
+              'border:1px solid rgba(33,72,47,.11);':'border:1px solid rgba(255,255,255,.12);',
+              'background:linear-gradient(145deg,#fff, #e7efe4);':'background:linear-gradient(145deg,#2a2a2a, #0d1f0d);',
+              'background:linear-gradient(135deg,#245936,#bdd765 42%,#f4f1e8 42%,#eef0e8);':'background:linear-gradient(135deg,#1a4d1a,#4CAF50 42%,#0d1f0d 42%,#2a2a2a);',
+              'background:#fff;':'background:#2a2a2a;',
+              'color:#526057;':'color:#a0a0a0;',
+              'background:#edf3e8;':'background:#1a4d1a;',
+              'color:#d6e2d7;':'color:#e0e0e0;',
+              'color:#34423a;':'color:#e0e0e0;',
+              'color:#dce7dc;':'color:#e0e0e0;',
+              'background:#dfe7db;':'background:#2a2a2a;',
+              'color:#dbe5dc;':'color:#e0e0e0;',
+              'background:#fbfcfa;':'background:#2a2a2a;',
+              'border:1px solid #d6ddd5;':'border:1px solid rgba(255,255,255,.16);',
+              'color:#344139;':'color:#e0e0e0;',
+              'color:#2e6b3e;':'color:#a8ff78;',
+              'color:#a54b2f;':'color:#ff8b6b;',
+              'color:#7a847d;':'color:#a0a0a0;',
+              'color:#4e5a52;':'color:#c0c0c0;',
+              'color:#92a297;':'color:#a0a0a0;',
+              'color:#aebcaf;':'color:#a0a0a0;',
+              'color:#ced9cf;':'color:#e0e0e0;',
+              'background:#f2f5ef;':'background:#1a4d1a;',
+              'rgba(33,72,47,.17)':'rgba(0,0,0,.35)',
+              'rgba(47,98,64,.08)':'rgba(168,255,120,.12)',
+              'rgba(47,98,64,.15)':'rgba(76,175,80,.18)',
+              'rgba(47,98,64,.25)':'rgba(76,175,80,.35)',
+              'rgba(16,39,25,.14)':'rgba(0,0,0,.45)',
+              'rgba(16,39,25,.1)':'rgba(0,0,0,.4)',
+              'rgba(16,39,25,.06)':'rgba(0,0,0,.3)',
+              'rgba(16,39,25,.12)':'rgba(0,0,0,.4)',
+              'rgba(16,39,25,.54)':'rgba(0,0,0,.68)',
+              'rgba(16,39,25,.05)':'rgba(0,0,0,.08)',
+              'rgba(255,255,255,.09)':'rgba(255,255,255,.12)',
+              'rgba(255,255,255,.18)':'rgba(255,255,255,.16)',
+              'rgba(191,216,90,.35)':'rgba(168,255,120,.28)',
+              'rgba(191,216,90,0)':'rgba(168,255,120,0)',
+              'rgba(47,98,64,0)':'rgba(76,175,80,0)',
+              'rgba(251,250,246,.9)':'rgba(42,42,42,.92)',
+              'rgba(16,39,25,.72)':'rgba(0,0,0,.72)',
+              'rgba(16,39,25,.08)':'rgba(0,0,0,.35)',
+              'color:var(--green-950);':'color:#ffffff;',
+              'color:var(--green-900);':'color:#ffffff;',
+              '.btn-outline { border-color:var(--green-800); color:var(--green-800);':'.btn-outline { border-color:var(--lime); color:var(--lime);',
+          }
+          for a,b in replacements.items(): css = css.replace(a,b)
+          css = css.replace('.footer__brand img { width:160px; filter:brightness(0) invert(1);', '.footer__brand img { width:160px; filter:none; background:#fff; padding:6px 10px; border-radius:8px;')
+          css_path.write_text(css, encoding='utf-8')
+
+          pages = [
+              'https://www.hamellandscaping.com/',
+              'https://www.hamellandscaping.com/about.html',
+              'https://www.hamellandscaping.com/services.html',
+              'https://www.hamellandscaping.com/contact.html',
+              'https://www.hamellandscaping.com/slideshows/plantings/plantings.html',
+          ]
+          session = requests.Session()
+          session.headers.update({'User-Agent':'Mozilla/5.0 (compatible; HamelBrosSite/1.0)'})
+          gallery_dir = root / 'assets' / 'gallery'
+          gallery_dir.mkdir(parents=True, exist_ok=True)
+          found = []
+          seen = set()
+
+          for page in pages:
+              try:
+                  r = session.get(page, timeout=25)
+                  r.raise_for_status()
+              except Exception as exc:
+                  print('skip page', page, exc)
+                  continue
+              soup = BeautifulSoup(r.text, 'html.parser')
+              for img in soup.find_all('img'):
+                  raw = img.get('data-src') or img.get('src')
+                  if not raw: continue
+                  u = urljoin(page, raw)
+                  parsed = urlparse(u)
+                  if parsed.scheme not in ('http','https') or not parsed.netloc.endswith('hamellandscaping.com'):
+                      continue
+                  if u in seen: continue
+                  seen.add(u)
+                  alt = (img.get('alt') or '').strip()
+                  if 'logo' in (alt + ' ' + u).lower(): continue
+                  found.append((u, page, alt))
+
+          downloaded = []
+          for idx,(u,page,alt) in enumerate(found[:18], start=1):
+              try:
+                  r = session.get(u, timeout=30)
+                  r.raise_for_status()
+                  ctype = r.headers.get('content-type','').split(';')[0].lower()
+                  ext = { 'image/jpeg':'.jpg','image/jpg':'.jpg','image/png':'.png','image/webp':'.webp','image/gif':'.gif' }.get(ctype)
+                  if not ext:
+                      ext = Path(urlparse(u).path).suffix.lower()
+                  if ext not in {'.jpg','.jpeg','.png','.webp','.gif'}: continue
+                  name = f'original-{idx:02d}{ext}'
+                  (gallery_dir / name).write_bytes(r.content)
+                  downloaded.append({'src':f'assets/gallery/{name}','source':page,'alt':alt or 'Hamel Bros. Landscaping'} )
+              except Exception as exc:
+                  print('skip image', u, exc)
+
+          manifest = gallery_dir / 'manifest.json'
+          manifest.write_text(json.dumps(downloaded, indent=2), encoding='utf-8')
+
+          gallery_path = root / 'gallery.html'
+          g = gallery_path.read_text(encoding='utf-8')
+          if downloaded:
+              cards=[]
+              labels=['Plantings & design','Landscape work','Lawn care','Property maintenance','Commercial grounds','Seasonal service']
+              for i,item in enumerate(downloaded[:6]):
+                  label=labels[i] if i < len(labels) else 'Hamel Bros. work'
+                  cards.append(f'<a class="gallery-card reveal" href="{htmlmod.escape(item["source"], quote=True)}" target="_blank" rel="noopener"><img src="{htmlmod.escape(item["src"], quote=True)}" alt="{htmlmod.escape(item["alt"], quote=True)}"><div class="gallery-card__copy"><strong>{label}</strong><span>Photography from the original Hamel Bros. website.</span></div></a>')
+              cards_html='\n'.join(cards)
+              g = re.sub(r'<div class="gallery-grid">.*?</div><p class="gallery-note">.*?</p>', '<div class="gallery-grid">'+cards_html+'</div><p class="gallery-note">These images are sourced from the original Hamel Bros. website. Each image links back to its original source page.</p>', g, flags=re.S)
+          else:
+              g = g.replace('Photography on this page is representative landscaping imagery, not presented as a claim that each pictured property is a Hamel Bros. project.', 'The original site gallery is linked below while source photography is being migrated.')
+          g = g.replace('<meta name="theme-color" content="#163321">','<meta name="theme-color" content="#0a0a0a">')
+          gallery_path.write_text(g, encoding='utf-8')
+          print('downloaded', len(downloaded), 'source images')
+          PY
+
+      - name: Commit and remove one-time workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add css/styles.css gallery.html assets/gallery .github/workflows/hamel-brand-and-gallery.yml
+          git rm .github/workflows/hamel-brand-and-gallery.yml
+          git commit -m "upgrade: restore original brand palette and source photography" || exit 0
+          git push
