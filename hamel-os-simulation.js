@@ -159,5 +159,23 @@
       persist(); return clone(state);
     }
   };
+
+  // Responsive fleet map: keep the map inside the viewport on tablet and mobile.
+  const mapStyle = document.createElement('style');
+  mapStyle.id = 'hamel-os-map-responsive';
+  mapStyle.textContent = `
+    .map-layout{width:100%;min-width:0;align-items:stretch;}
+    .map-layout > *{min-width:0;max-width:100%;}
+    .map-layout > div:first-child{width:100%;min-width:0;overflow:hidden;}
+    @media (max-width:900px){
+      .map-layout{grid-template-columns:minmax(0,1fr)!important;width:100%;}
+      .map-layout > div:first-child{height:clamp(300px,58vw,430px)!important;min-height:300px;}
+      .map-layout > div:nth-child(2){width:100%;}
+    }
+    @media (max-width:640px){
+      .map-layout > div:first-child{height:clamp(280px,72vw,390px)!important;min-height:280px;}
+    }
+  `;
+  document.head.appendChild(mapStyle);
   global.HamelSimulation = api;
 })(window);
