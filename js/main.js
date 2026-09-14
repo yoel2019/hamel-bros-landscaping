@@ -3,120 +3,15 @@ const SUPABASE_URL='https://jrgzenkcimujewydqflq.supabase.co';const SUPABASE_KEY
 function initMenu(){
   const toggle=document.querySelector('.menu-toggle'),menu=document.querySelector('.navbar__menu');
   if(!toggle||!menu)return;
-  menu.id=menu.id||'site-menu';
-  toggle.setAttribute('aria-controls',menu.id);
-  toggle.classList.remove('menu-toggle--floating-widget');
-  const close=()=>{menu.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');document.body.classList.remove('menu-open')};
-  toggle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const open=menu.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');document.body.classList.toggle('menu-open',open)});
-  menu.addEventListener('click',e=>{if(e.target.closest('a'))close()});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-  const sync=()=>{if(window.innerWidth>1050)close()};
-  window.addEventListener('resize',sync,{passive:true});
-  sync();
+  menu.id=menu.id||'site-menu';toggle.setAttribute('aria-controls',menu.id);toggle.classList.remove('menu-toggle--floating-widget');
+  const apply=()=>{const mobile=window.innerWidth<=1050;menu.style.setProperty('position',mobile?'absolute':'','important');menu.style.setProperty('top',mobile?'100%':'','important');menu.style.setProperty('right',mobile?'0':'','important');menu.style.setProperty('left',mobile?'auto':'','important');menu.style.setProperty('width',mobile?'min(380px,calc(100vw - 24px))':'','important');menu.style.setProperty('z-index',mobile?'5001':'','important');if(mobile){menu.style.setProperty('display',menu.classList.contains('is-open')?'flex':'none','important');menu.style.setProperty('visibility',menu.classList.contains('is-open')?'visible':'hidden','important');menu.style.setProperty('opacity',menu.classList.contains('is-open')?'1':'0','important');menu.style.setProperty('pointer-events',menu.classList.contains('is-open')?'auto':'none','important')}};
+  const close=()=>{menu.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');document.body.classList.remove('menu-open');apply()};
+  toggle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();menu.classList.toggle('is-open');const open=menu.classList.contains('is-open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');document.body.classList.toggle('menu-open',open);apply()});
+  menu.addEventListener('click',e=>{if(e.target.closest('a'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.addEventListener('resize',apply,{passive:true});apply();
 }
-
-function initReveal(){
-  const items=document.querySelectorAll('.reveal');
-  if(!items.length)return;
-  if(!('IntersectionObserver' in window)){items.forEach(el=>el.classList.add('is-visible'));return}
-  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}}),{threshold:.08,rootMargin:'0px 0px -30px 0px'});
-  items.forEach(el=>observer.observe(el));
-}
-
-function initFooterAccordion(){
-  const groups=[...document.querySelectorAll('.footer__top>div:not(.footer__brand)')];
-  if(!groups.length)return;
-  groups.forEach((group,index)=>{
-    const title=group.querySelector('h3'),list=group.querySelector('ul');
-    if(!title||!list||group.dataset.footerReady)return;
-    group.dataset.footerReady='true';
-    title.setAttribute('role','button');title.setAttribute('tabindex','0');title.setAttribute('aria-expanded',index===0?'true':'false');
-    if(index===0)group.classList.add('is-open');
-    const toggle=()=>{if(window.innerWidth>780)return;const open=group.classList.toggle('is-open');title.setAttribute('aria-expanded',String(open))};
-    title.addEventListener('click',toggle);
-    title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
-  });
-  const sync=()=>groups.forEach((group,index)=>{const title=group.querySelector('h3');if(!title)return;if(window.innerWidth>780){group.classList.add('is-open');title.setAttribute('aria-expanded','true')}else if(index!==0){group.classList.remove('is-open');title.setAttribute('aria-expanded','false')}});
-  window.addEventListener('resize',sync,{passive:true});
-  sync();
-}
-
-function initGalleryLightbox(){
-  const cards=[...document.querySelectorAll('.gallery-card')];
-  if(!cards.length||document.getElementById('gallery-lightbox'))return;
-  const lb=document.createElement('div');
-  lb.className='gallery-lightbox';lb.id='gallery-lightbox';lb.setAttribute('aria-hidden','true');
-  lb.innerHTML='<div class="gallery-lightbox__stage" role="dialog" aria-modal="true" aria-label="Gallery photo viewer"><button class="gallery-lightbox__close" type="button" aria-label="Close photo viewer"><i class="fa-solid fa-xmark"></i></button><button class="gallery-lightbox__prev" type="button" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button><img class="gallery-lightbox__image" alt=""><button class="gallery-lightbox__next" type="button" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button><div class="gallery-lightbox__caption" aria-live="polite"></div></div>';
-  document.body.appendChild(lb);
-  const img=lb.querySelector('.gallery-lightbox__image'),caption=lb.querySelector('.gallery-lightbox__caption');
-  const prev=lb.querySelector('.gallery-lightbox__prev'),next=lb.querySelector('.gallery-lightbox__next'),closeButton=lb.querySelector('.gallery-lightbox__close');
-  let index=0,touchX=0,lastFocused=null;
-  const getTitle=card=>card.querySelector('.gallery-card__copy strong')?.textContent.trim()||'';
-  const getFocusable=()=>[...lb.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
-  const preload=i=>{
-    const card=cards[(i+cards.length)%cards.length],source=card?.querySelector('img');
-    if(source?.src){const image=new Image();image.src=source.currentSrc||source.src}
-  };
-  const show=i=>{
-    index=(i+cards.length)%cards.length;
-    const card=cards[index],source=card.querySelector('img');
-    if(!source)return;
-    const src=source.currentSrc||source.src;
-    img.src=src;img.alt=source.alt||getTitle(card);img.removeAttribute('data-error');
-    img.onerror=()=>img.setAttribute('data-error','true');
-    caption.textContent='';
-    const label=document.createElement('span');label.textContent=getTitle(card);caption.appendChild(label);
-    const counter=document.createElement('span');counter.className='gallery-lightbox__counter';counter.textContent=`${index+1} / ${cards.length}`;caption.appendChild(counter);
-    preload(index-1);preload(index+1);
-  };
-  const open=i=>{lastFocused=document.activeElement;show(i);lb.classList.add('is-open');lb.setAttribute('aria-hidden','false');document.body.classList.add('gallery-open');closeButton.focus()};
-  const close=()=>{lb.classList.remove('is-open');lb.setAttribute('aria-hidden','true');document.body.classList.remove('gallery-open');img.removeAttribute('src');img.removeAttribute('data-error');if(lastFocused&&typeof lastFocused.focus==='function')lastFocused.focus()};
-  cards.forEach((card,i)=>{
-    const source=card.querySelector('img');
-    card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-label',`Open ${getTitle(card)||'gallery photo'}`);
-    source?.addEventListener('error',()=>card.classList.add('is-image-error'));
-    source?.addEventListener('load',()=>card.classList.remove('is-image-error'));
-    card.addEventListener('click',e=>{e.preventDefault();open(i)});
-    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(i)}});
-  });
-  closeButton.addEventListener('click',close);
-  prev.addEventListener('click',()=>show(index-1));
-  next.addEventListener('click',()=>show(index+1));
-  lb.addEventListener('click',e=>{if(e.target===lb)close()});
-  document.addEventListener('keydown',e=>{
-    if(!lb.classList.contains('is-open'))return;
-    if(e.key==='Escape'){e.preventDefault();close();return}
-    if(e.key==='ArrowLeft'){e.preventDefault();show(index-1);return}
-    if(e.key==='ArrowRight'){e.preventDefault();show(index+1);return}
-    if(e.key==='Tab'){
-      const focusable=getFocusable();
-      if(!focusable.length)return;
-      const first=focusable[0],last=focusable[focusable.length-1];
-      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
-      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
-    }
-  });
-  lb.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX},{passive:true});
-  lb.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-touchX;if(Math.abs(dx)>45)show(dx<0?index+1:index-1)},{passive:true});
-}
-
-async function submitContact(form){
-  const status=form.querySelector('.form-status'),button=form.querySelector('button[type=submit]');
-  if(!status||!button)return;
-  const original=button.textContent;status.textContent='Sending…';status.className='form-status';button.disabled=true;
-  try{
-    const data=Object.fromEntries(new FormData(form).entries());
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/contact_submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Prefer':'return=minimal'},body:JSON.stringify({first_name:data.first_name,last_name:data.last_name,email:data.email,phone:data.phone||null,city:data.city,service:data.service||null,message:data.message,source:data.source||'Website'})});
-    if(!response.ok)throw new Error(await response.text());
-    form.reset();status.textContent='Thanks — your request has been received. We’ll be in touch.';status.className='form-status success';
-  }catch(error){console.error(error);status.textContent='We could not send the form right now. Please call 508-647-0003.';status.className='form-status error'}
-  finally{button.disabled=false;button.textContent=original}
-}
-
-function initContactForm(){
-  const form=document.getElementById('contactForm');
-  if(!form)return;
-  form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())submitContact(form)});
-}
-
+function initReveal(){const items=document.querySelectorAll('.reveal');if(!items.length)return;if(!('IntersectionObserver'in window)){items.forEach(el=>el.classList.add('is-visible'));return}const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}}),{threshold:.08,rootMargin:'0px 0px -30px 0px'});items.forEach(el=>observer.observe(el))}
+function initFooterAccordion(){const groups=[...document.querySelectorAll('.footer__top>div:not(.footer__brand)')];groups.forEach((group,index)=>{const title=group.querySelector('h3'),list=group.querySelector('ul');if(!title||!list||group.dataset.footerReady)return;group.dataset.footerReady='true';title.setAttribute('role','button');title.setAttribute('tabindex','0');title.setAttribute('aria-expanded',index===0?'true':'false');if(index===0)group.classList.add('is-open');const toggle=()=>{if(window.innerWidth>780)return;const open=group.classList.toggle('is-open');title.setAttribute('aria-expanded',String(open))};title.addEventListener('click',toggle);title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}})});const sync=()=>groups.forEach((group,index)=>{const title=group.querySelector('h3');if(!title)return;if(window.innerWidth>780){group.classList.add('is-open');title.setAttribute('aria-expanded','true')}else if(index!==0){group.classList.remove('is-open');title.setAttribute('aria-expanded','false')}});window.addEventListener('resize',sync,{passive:true});sync()}
+function initGalleryLightbox(){const cards=[...document.querySelectorAll('.gallery-card')];if(!cards.length||document.getElementById('gallery-lightbox'))return;const lb=document.createElement('div');lb.className='gallery-lightbox';lb.id='gallery-lightbox';lb.setAttribute('aria-hidden','true');lb.innerHTML='<div class="gallery-lightbox__stage" role="dialog" aria-modal="true" aria-label="Gallery photo viewer"><button class="gallery-lightbox__close" type="button" aria-label="Close photo viewer"><i class="fa-solid fa-xmark"></i></button><button class="gallery-lightbox__prev" type="button" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button><img class="gallery-lightbox__image" alt=""><button class="gallery-lightbox__next" type="button" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button><div class="gallery-lightbox__caption" aria-live="polite"></div></div>';document.body.appendChild(lb);const img=lb.querySelector('.gallery-lightbox__image'),caption=lb.querySelector('.gallery-lightbox__caption'),prev=lb.querySelector('.gallery-lightbox__prev'),next=lb.querySelector('.gallery-lightbox__next'),closeButton=lb.querySelector('.gallery-lightbox__close');let index=0,touchX=0,lastFocused=null;const title=c=>c.querySelector('.gallery-card__copy strong')?.textContent.trim()||'';const show=i=>{index=(i+cards.length)%cards.length;const c=cards[index],s=c.querySelector('img');if(!s)return;img.src=s.currentSrc||s.src;img.alt=s.alt||title(c);caption.textContent='';const l=document.createElement('span');l.textContent=title(c);caption.appendChild(l);const n=document.createElement('span');n.className='gallery-lightbox__counter';n.textContent=`${index+1} / ${cards.length}`;caption.appendChild(n)};const open=i=>{lastFocused=document.activeElement;show(i);lb.classList.add('is-open');lb.setAttribute('aria-hidden','false');document.body.classList.add('gallery-open');closeButton.focus()};const close=()=>{lb.classList.remove('is-open');lb.setAttribute('aria-hidden','true');document.body.classList.remove('gallery-open');img.removeAttribute('src');lastFocused?.focus?.()};cards.forEach((c,i)=>{c.tabIndex=0;c.setAttribute('role','button');c.addEventListener('click',e=>{e.preventDefault();open(i)});c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(i)}})});closeButton.addEventListener('click',close);prev.addEventListener('click',()=>show(index-1));next.addEventListener('click',()=>show(index+1));lb.addEventListener('click',e=>{if(e.target===lb)close()});document.addEventListener('keydown',e=>{if(!lb.classList.contains('is-open'))return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1)});lb.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX},{passive:true});lb.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-touchX;if(Math.abs(dx)>45)show(dx<0?index+1:index-1)},{passive:true})}
+async function submitContact(form){const status=form.querySelector('.form-status'),button=form.querySelector('button[type=submit]');if(!status||!button)return;const original=button.textContent;status.textContent='Sending…';button.disabled=true;try{const data=Object.fromEntries(new FormData(form).entries());const response=await fetch(`${SUPABASE_URL}/rest/v1/contact_submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Prefer':'return=minimal'},body:JSON.stringify({first_name:data.first_name,last_name:data.last_name,email:data.email,phone:data.phone||null,city:data.city,service:data.service||null,message:data.message,source:data.source||'Website'})});if(!response.ok)throw new Error(await response.text());form.reset();status.textContent='Thanks — your request has been received. We’ll be in touch.';status.className='form-status success'}catch(error){console.error(error);status.textContent='We could not send the form right now. Please call 508-647-0003.';status.className='form-status error'}finally{button.disabled=false;button.textContent=original}}
+function initContactForm(){const form=document.getElementById('contactForm');if(!form)return;form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())submitContact(form)})}
 document.addEventListener('DOMContentLoaded',()=>{initMenu();initReveal();initFooterAccordion();initGalleryLightbox();initContactForm()});
