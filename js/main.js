@@ -202,8 +202,13 @@ function initCounters() {
 function initSmoothScroll() {
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', (e) => {
-      const target = document.querySelector(anchor.getAttribute('href'));
+      const href = anchor.getAttribute('href');
+      if (!href || href === '#') return;
+
+      const targetId = decodeURIComponent(href.slice(1));
+      const target = document.getElementById(targetId);
       if (!target) return;
+
       e.preventDefault();
       const navHeight = document.querySelector('.navbar')?.offsetHeight || 80;
       const top = target.getBoundingClientRect().top + window.scrollY - navHeight - 20;
@@ -252,7 +257,7 @@ function initLightbox() {
   lightbox.id    = 'lightbox';
   lightbox.innerHTML = `
     <div class="lightbox__backdrop"></div>
-    <div class="lightbox__content">
+    <div class="lightbox__content" role="dialog" aria-modal="true" aria-label="Project gallery lightbox">
       <button class="lightbox__close" aria-label="Close">&times;</button>
       <button class="lightbox__prev" aria-label="Previous">&#8249;</button>
       <img class="lightbox__img" src="" alt="" />
@@ -277,34 +282,85 @@ function initLightbox() {
   document.head.appendChild(style);
 
   const img    = lightbox.querySelector('.lightbox__img');
+  const dialog = lightbox.querySelector('.lightbox__content');
+  const closeButton = lightbox.querySelector('.lightbox__close');
+  const prevButton = lightbox.querySelector('.lightbox__prev');
+  const nextButton = lightbox.querySelector('.lightbox__next');
   const images = [...galleryItems].map(item => item.querySelector('img'));
   let currentIndex = 0;
+  let previousFocus = null;
+
+  const getFocusableElements = () => (
+    [...dialog.querySelectorAll('button')]
+      .filter((element) => !element.disabled)
+  );
 
   const open  = (index) => {
+    const wasActive = lightbox.classList.contains('active');
     currentIndex   = index;
     img.src        = images[index].src || images[index].dataset.src;
     img.alt        = images[index].alt;
+    if (!wasActive) {
+      previousFocus = document.activeElement;
+    }
     lightbox.classList.add('active');
     document.body.style.overflow = 'hidden';
+    closeButton.focus();
   };
 
   const close = () => {
     lightbox.classList.remove('active');
     document.body.style.overflow = '';
+    if (previousFocus instanceof HTMLElement) {
+      previousFocus.focus();
+    }
   };
 
   const prev = () => open((currentIndex - 1 + images.length) % images.length);
   const next = () => open((currentIndex + 1) % images.length);
 
-  galleryItems.forEach((item, i) => item.addEventListener('click', () => open(i)));
-  lightbox.querySelector('.lightbox__close').addEventListener('click', close);
+  galleryItems.forEach((item, i) => {
+    const image = item.querySelector('img');
+
+    if (!(item instanceof HTMLButtonElement) && !(item instanceof HTMLAnchorElement)) {
+      item.tabIndex = 0;
+      item.setAttribute('role', 'button');
+    }
+
+    item.setAttribute('aria-label', image?.alt ? `Open image: ${image.alt}` : 'Open gallery image');
+    item.addEventListener('click', () => open(i));
+    item.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      open(i);
+    });
+  });
+
+  closeButton.addEventListener('click', close);
   lightbox.querySelector('.lightbox__backdrop').addEventListener('click', close);
-  lightbox.querySelector('.lightbox__prev').addEventListener('click', prev);
-  lightbox.querySelector('.lightbox__next').addEventListener('click', next);
+  prevButton.addEventListener('click', prev);
+  nextButton.addEventListener('click', next);
 
   // Keyboard navigation
   document.addEventListener('keydown', (e) => {
     if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Tab') {
+      const focusable = getFocusableElements();
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+      return;
+    }
+
     if (e.key === 'Escape')      close();
     if (e.key === 'ArrowLeft')   prev();
     if (e.key === 'ArrowRight')  next();
@@ -324,7 +380,4 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initLazySections();
   initLightbox();
-
-  // Log for development
-  console.log('%c Hamel Bros. Web — Loaded ✓', 'color:#a8ff78; font-weight:bold;');
 });
