@@ -26,7 +26,7 @@ function initMenu(){
   menu.addEventListener('click',e=>{if(e.target.closest('a'))close()});
   document.addEventListener('click',e=>{if(menu.classList.contains('is-open')&&!menu.contains(e.target)&&!toggle.contains(e.target))close()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('is-open')){close();toggle.focus()}});
-  window.addEventListener('resize',()=>{if(window.innerWidth>820)close()},{passive:true});
+  window.addEventListener('resize',()=>{if(window.innerWidth>1050)close()},{passive:true});
   setActive();
 }
 
