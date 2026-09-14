@@ -117,7 +117,7 @@
 ```
 hamelbrosweb/
 ├── agenteai-instructions.md   ← este archivo
-├── assets/logo/hamelBros.LandscapingLogo.png
+├── assets/logo/assets/logo/hamelBros.LandscapingLogo.png
 ├── assets/
 │   └── logo/
 ├── css/
