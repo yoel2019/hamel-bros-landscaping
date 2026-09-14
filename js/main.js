@@ -1,6 +1,13 @@
 const SUPABASE_URL = 'https://jrgzenkcimujewydqflq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_scV6_vg_8Nmf3Y2p4hbPPw_SiJB-NZN';
 
+function loadBrandFixes() {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'css/brand-fixes.css';
+  document.head.appendChild(link);
+}
+
 function initMenu() {
   const toggle = document.querySelector('.menu-toggle');
   const menu = document.querySelector('.navbar__menu');
@@ -87,6 +94,7 @@ function initContactForm() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  loadBrandFixes();
   initMenu();
   initReveal();
   initContactForm();
