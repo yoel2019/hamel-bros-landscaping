@@ -8,8 +8,6 @@
   const now = () => new Date().toISOString();
   const makeId = p => p + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
 
-  // Keep the mobile navigation visually separated from page content.
-  // This is injected before React mounts so the app never renders a transparent nav.
   function ensureMobileNavSurface() {
     if (document.getElementById('hamel-os-mobile-nav-surface')) return;
     const style = document.createElement('style');
@@ -28,12 +26,8 @@
           color: #858b85 !important;
         }
         .mobile-nav > button[aria-current="page"],
-        .mobile-nav > button:focus-visible {
-          outline: none;
-        }
-        .mobile-nav > button:active {
-          background: #182018 !important;
-        }
+        .mobile-nav > button:focus-visible { outline: none; }
+        .mobile-nav > button:active { background: #182018 !important; }
       }
     `;
     document.head.appendChild(style);
@@ -160,22 +154,88 @@
     }
   };
 
-  // Responsive fleet map: keep the map inside the viewport on tablet and mobile.
-  const mapStyle = document.createElement('style');
-  mapStyle.id = 'hamel-os-map-responsive';
-  mapStyle.textContent = `
-    .map-layout{width:100%;min-width:0;align-items:stretch;}
-    .map-layout > *{min-width:0;max-width:100%;}
-    .map-layout > div:first-child{width:100%;min-width:0;overflow:hidden;}
-    @media (max-width:900px){
-      .map-layout{grid-template-columns:minmax(0,1fr)!important;width:100%;}
-      .map-layout > div:first-child{height:clamp(300px,58vw,430px)!important;min-height:300px;}
-      .map-layout > div:nth-child(2){width:100%;}
-    }
-    @media (max-width:640px){
-      .map-layout > div:first-child{height:clamp(280px,72vw,390px)!important;min-height:280px;}
-    }
-  `;
-  document.head.appendChild(mapStyle);
+  // Fleet map presentation + interaction. The map remains a visual simulation,
+  // but behaves like an operations map: pan, zoom, reset, and live-fit controls.
+  function ensureFleetMapExperience() {
+    if (document.getElementById('hamel-os-fleet-map-style')) return;
+    const style = document.createElement('style');
+    style.id = 'hamel-os-fleet-map-style';
+    style.textContent = `
+      .map-layout{width:100%;min-width:0;align-items:stretch;}
+      .map-layout > *{min-width:0;max-width:100%;}
+      .map-layout > div:first-child{width:100%;min-width:0;overflow:hidden;position:relative;}
+      .map-layout > div:first-child > div:first-child{align-items:flex-start!important;}
+      .hamel-map-stage{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform;cursor:grab;touch-action:none;}
+      .hamel-map-stage.is-dragging{cursor:grabbing;}
+      .hamel-map-controls{position:absolute;right:12px;bottom:12px;z-index:12;display:flex;gap:5px;padding:4px;border:1px solid #222622;border-radius:10px;background:rgba(9,13,9,.88);backdrop-filter:blur(6px);pointer-events:auto;}
+      .hamel-map-controls button{width:34px;height:34px;border:1px solid #303630;border-radius:7px;background:#111611;color:#d7e3d7;font-size:17px;line-height:1;cursor:pointer;}
+      .hamel-map-controls button:hover{border-color:#526152;background:#182018;}
+      .hamel-map-controls button:focus-visible{outline:2px solid #a8ff78;outline-offset:1px;}
+      .hamel-map-live{position:absolute;left:12px;bottom:12px;z-index:12;padding:6px 9px;border:1px solid #304130;border-radius:999px;background:rgba(9,13,9,.88);color:#a8ff78;font-size:9px;font-weight:700;letter-spacing:.08em;pointer-events:none;}
+      @media (max-width:900px){
+        .map-layout{grid-template-columns:minmax(0,1fr)!important;width:100%;}
+        .map-layout > div:first-child{height:clamp(300px,58vw,430px)!important;min-height:300px;}
+        .map-layout > div:nth-child(2){width:100%;}
+      }
+      @media (max-width:640px){
+        .map-layout > div:first-child{height:clamp(280px,72vw,390px)!important;min-height:280px;}
+        .hamel-map-controls{right:9px;bottom:9px;}
+        .hamel-map-controls button{width:36px;height:36px;}
+        .hamel-map-live{left:9px;bottom:9px;}
+      }
+      @media (max-width:900px){.page{padding-bottom:calc(108px + env(safe-area-inset-bottom))!important;}}
+    `;
+    document.head.appendChild(style);
+
+    const enhance = () => {
+      const map = document.querySelector('.map-layout > div:first-child');
+      if (!map || map.dataset.hamelInteractive === '1') return;
+      map.dataset.hamelInteractive = '1';
+      const overlay = map.querySelector(':scope > div:first-child');
+      if (overlay) { overlay.style.alignItems = 'flex-start'; overlay.style.zIndex = '8'; }
+
+      const stage = document.createElement('div');
+      stage.className = 'hamel-map-stage';
+      const children = Array.from(map.children);
+      children.forEach(child => {
+        if (child === overlay) return;
+        if (child.classList.contains('hamel-map-controls') || child.classList.contains('hamel-map-live')) return;
+        stage.appendChild(child);
+      });
+      map.insertBefore(stage, map.firstChild);
+
+      const controls = document.createElement('div');
+      controls.className = 'hamel-map-controls';
+      controls.setAttribute('aria-label','Map controls');
+      controls.innerHTML = '<button type="button" data-map-action="zoom-out" aria-label="Zoom out">−</button><button type="button" data-map-action="reset" aria-label="Reset map">↺</button><button type="button" data-map-action="zoom-in" aria-label="Zoom in">+</button>';
+      map.appendChild(controls);
+      const live = document.createElement('div');
+      live.className = 'hamel-map-live';
+      live.textContent = 'DRAG · ZOOM · LIVE';
+      map.appendChild(live);
+
+      let scale = 1, tx = 0, ty = 0;
+      const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
+      const render = () => { stage.style.transform = `translate3d(${tx}px,${ty}px,0) scale(${scale})`; };
+      const reset = () => { scale=1; tx=0; ty=0; render(); };
+      const zoom = delta => { scale=clamp(scale+delta,.85,2.5); tx=clamp(tx,-map.clientWidth*(scale-1)*.55,map.clientWidth*(scale-1)*.55); ty=clamp(ty,-map.clientHeight*(scale-1)*.55,map.clientHeight*(scale-1)*.55); render(); };
+      controls.addEventListener('click', e => { const b=e.target.closest('button'); if(!b)return; const a=b.dataset.mapAction; if(a==='zoom-in')zoom(.15); else if(a==='zoom-out')zoom(-.15); else reset(); });
+      map.addEventListener('dblclick', e => { if(e.target.closest('.hamel-map-controls')) return; zoom(.25); });
+      map.addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY<0?.12:-.12); }, {passive:false});
+
+      let drag=false, sx=0, sy=0, ox=0, oy=0;
+      stage.addEventListener('pointerdown', e => { if(e.button!==undefined && e.button!==0)return; drag=true; sx=e.clientX; sy=e.clientY; ox=tx; oy=ty; stage.classList.add('is-dragging'); stage.setPointerCapture?.(e.pointerId); });
+      stage.addEventListener('pointermove', e => { if(!drag)return; const dx=e.clientX-sx,dy=e.clientY-sy; const limX=Math.max(0,map.clientWidth*(scale-1)*.6),limY=Math.max(0,map.clientHeight*(scale-1)*.6); tx=clamp(ox+dx,-limX,limX); ty=clamp(oy+dy,-limY,limY); render(); });
+      const stop=e=>{ if(!drag)return; drag=false; stage.classList.remove('is-dragging'); try{stage.releasePointerCapture?.(e.pointerId);}catch(_){} };
+      stage.addEventListener('pointerup',stop); stage.addEventListener('pointercancel',stop); stage.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')stop(e);});
+      window.addEventListener('resize',()=>{tx=clamp(tx,-map.clientWidth*(scale-1)*.6,map.clientWidth*(scale-1)*.6);ty=clamp(ty,-map.clientHeight*(scale-1)*.6,map.clientHeight*(scale-1)*.6);render();});
+      render();
+    };
+    const observer = new MutationObserver(enhance);
+    observer.observe(document.body,{childList:true,subtree:true});
+    enhance();
+  }
+  ensureFleetMapExperience();
+
   global.HamelSimulation = api;
 })(window);
