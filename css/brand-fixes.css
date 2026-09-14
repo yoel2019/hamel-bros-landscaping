@@ -18,10 +18,12 @@
   .navbar__logo{display:flex;align-items:center;justify-content:flex-start;flex:0 1 auto;min-width:0;max-width:calc(100% - 64px);height:72px}
   .navbar__logo img{width:150px!important;max-width:100%;height:auto!important;max-height:58px;object-fit:contain;display:block}
   .navbar__actions{margin-left:auto;display:flex;align-items:center;padding-right:0!important}
-  .menu-toggle{position:fixed!important;top:max(14px,env(safe-area-inset-top) + 8px)!important;right:14px!important;z-index:3100!important;width:46px!important;height:46px!important;display:grid!important;place-content:center!important;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(25,25,25,.97);color:var(--brand-lime);box-shadow:0 10px 28px rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-  .navbar__menu{position:fixed!important;inset:0!important;top:0!important;width:100%!important;max-height:none!important;overflow-y:auto;display:none;padding:96px 20px 28px!important;background:rgba(10,10,10,.985)!important;border:0!important;box-shadow:none!important;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:4px;z-index:3050!important}
-  .navbar__menu.is-open{display:flex!important}
-  .navbar__menu .navbar__link{padding:16px 14px;border-radius:12px;font-size:1rem}
+  .menu-toggle{position:fixed!important;top:45px!important;right:14px!important;z-index:3100!important;width:46px!important;height:46px!important;display:grid!important;place-content:center!important;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(25,25,25,.97);color:var(--brand-lime);box-shadow:0 10px 28px rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .navbar__menu{position:fixed!important;inset:0!important;top:0!important;width:100%!important;max-height:none!important;overflow-y:auto;display:none;padding:112px 20px 32px!important;background:rgba(10,10,10,.985)!important;border:0!important;box-shadow:none!important;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:4px;z-index:3050!important;color:#fff!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+  .navbar__menu.is-open{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+  .navbar__menu li{display:block!important;width:100%!important;list-style:none!important;margin:0!important;padding:0!important}
+  .navbar__menu .navbar__link{display:flex!important;align-items:center!important;width:100%!important;min-height:52px;padding:16px 14px!important;border-radius:12px;color:#fff!important;font-size:1rem!important;font-weight:600!important;position:relative}
+  .navbar__menu .navbar__link:after{display:none!important}
   .navbar__menu .navbar__link:hover,.navbar__menu .navbar__link:focus-visible{background:rgba(168,255,120,.08)}
   body.menu-open{overflow:hidden}
 }
