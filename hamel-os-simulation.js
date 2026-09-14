@@ -22,6 +22,7 @@
       }
       .map-layout > div:first-child > div:first-child{z-index:5!important}
     `;document.head.appendChild(s);
+    const link=document.createElement('link');link.id='hamel-os-layout-css';link.rel='stylesheet';link.href='hamel-os-layout.css';document.head.appendChild(link);
   }
   installBaseStyles();
 
@@ -74,7 +75,7 @@
   }
   function load(){try{const raw=localStorage.getItem(STORAGE_KEY);return raw?normalize(JSON.parse(raw)):clone(seed)}catch(_){return clone(seed)}}
   let state=load();const listeners=new Set();
-  function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(_){}const snap=clone(state);listeners.forEach(fn=>{try{fn(snap)}catch(_){}})}
+  function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(_){}const snap=clone(state);listeners.forEach(fn=>{try{fn(snap)}catch(_) {}})}
   function emit(actor,type,title,detail){state.events.unshift({id:makeId('EVT'),at:now(),actor,type,title,detail});state.events=state.events.slice(0,100)}
   const crew=id=>state.crews.find(c=>c.id===id),job=id=>state.jobs.find(j=>j.id===id),vehicle=id=>state.vehicles.find(v=>v.id===id);
   const validCrew=c=>c&&c.id;
