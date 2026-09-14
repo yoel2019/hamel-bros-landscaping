@@ -53,6 +53,7 @@ function initGalleryLightbox(){
   const prev=lb.querySelector('.gallery-lightbox__prev'),next=lb.querySelector('.gallery-lightbox__next'),closeButton=lb.querySelector('.gallery-lightbox__close');
   let index=0,touchX=0,lastFocused=null;
   const getTitle=card=>card.querySelector('.gallery-card__copy strong')?.textContent.trim()||'';
+  const getFocusable=()=>[...lb.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
   const preload=i=>{
     const card=cards[(i+cards.length)%cards.length],source=card?.querySelector('img');
     if(source?.src){const image=new Image();image.src=source.currentSrc||source.src}
@@ -83,7 +84,19 @@ function initGalleryLightbox(){
   prev.addEventListener('click',()=>show(index-1));
   next.addEventListener('click',()=>show(index+1));
   lb.addEventListener('click',e=>{if(e.target===lb)close()});
-  document.addEventListener('keydown',e=>{if(!lb.classList.contains('is-open'))return;if(e.key==='Escape')close();else if(e.key==='ArrowLeft')show(index-1);else if(e.key==='ArrowRight')show(index+1)});
+  document.addEventListener('keydown',e=>{
+    if(!lb.classList.contains('is-open'))return;
+    if(e.key==='Escape'){e.preventDefault();close();return}
+    if(e.key==='ArrowLeft'){e.preventDefault();show(index-1);return}
+    if(e.key==='ArrowRight'){e.preventDefault();show(index+1);return}
+    if(e.key==='Tab'){
+      const focusable=getFocusable();
+      if(!focusable.length)return;
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+    }
+  });
   lb.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX},{passive:true});
   lb.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-touchX;if(Math.abs(dx)>45)show(dx<0?index+1:index-1)},{passive:true});
 }
