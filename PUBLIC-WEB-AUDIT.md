@@ -43,24 +43,7 @@ There must be **one authoritative CSS file for the public website: `css/styles.c
 
 `public-hotfix.css` has been retired. Do not recreate it or introduce another patch stylesheet to compensate for a problem that belongs in `styles.css`.
 
-Required CSS behavior must be integrated directly into `styles.css`, including:
-
-- global reset/base behavior
-- typography
-- layout primitives
-- header and utility bar
-- navigation
-- mobile menu/dropdown
-- buttons
-- cards
-- hero sections
-- services
-- gallery
-- contact form
-- footer
-- responsive breakpoints
-- accessibility states
-- reduced-motion support
+Required public CSS behavior must be integrated directly into `styles.css`, including global reset/base behavior, typography, layout primitives, header, utility bar, navigation, mobile menu/dropdown, buttons, cards, hero sections, services, gallery, contact form, footer, responsive breakpoints, accessibility states and reduced-motion support.
 
 ## 3. Visual identity — KEEP
 
@@ -175,43 +158,7 @@ Current principal breakpoints:
 
 The JavaScript and CSS navigation breakpoint must remain synchronized.
 
-Responsive checks must cover:
-
-### Large desktop
-
-- fixed header
-- full navigation
-- phone and estimate actions
-- multi-column content
-- full footer
-
-### Tablet / transition
-
-- hamburger navigation
-- anchored dropdown
-- preserved content hierarchy
-- no clipped controls
-- no horizontal overflow
-
-### Mobile
-
-- compact utility bar
-- logo remains contained
-- reachable hamburger
-- dropdown remains attached to header
-- one-column major layouts where specified
-- service grid collapses appropriately
-- contact form becomes one column
-- footer accordion works
-
-### Narrow mobile
-
-- buttons fit their containers
-- hero actions stack
-- service/gallery grids become one column
-- footer becomes one column
-- form/card padding remains usable
-- no horizontal overflow
+Responsive checks must cover large desktop, tablet/transition, mobile and narrow mobile states, including no clipped controls and no horizontal overflow.
 
 ## 7. Page-by-page functionality — KEEP
 
@@ -294,6 +241,7 @@ Hidden source value remains `Website`.
 The form must:
 
 - use native required-field validation first
+- prevent duplicate/concurrent submission
 - disable submission while sending
 - show a sending state
 - show a visible/live success state
@@ -302,9 +250,9 @@ The form must:
 
 ## 8. Public JavaScript contract — KEEP
 
-`js/main.js` is the public interaction layer.
+`js/main.js` is the **single authoritative public interaction layer**. Public HTML must not recreate its behaviors with inline JavaScript, duplicated event handlers or page-specific copies of shared logic.
 
-Maintain these functions/behaviors:
+The public interaction layer owns only these responsibilities:
 
 - responsive navigation
 - active-page synchronization
@@ -313,6 +261,20 @@ Maintain these functions/behaviors:
 - footer accordion
 - gallery lightbox
 - contact-form submission
+
+### JavaScript single-source rules
+
+- Do not create `seasonal-index.js`, page-specific menu scripts, navigation hotfix scripts or duplicate interaction files.
+- Do not duplicate shared event handlers in individual HTML pages.
+- Do not use JavaScript to calculate CSS layout coordinates for the header/menu.
+- Do not inject inline `style` attributes as a substitute for `styles.css`.
+- State changes should use semantic/state classes such as `.is-open` and `.is-visible`; layout and visual rules belong in `styles.css`.
+- Use existing shared classes before creating a new class.
+- New JS-created classes must have a corresponding intentional CSS contract before deployment.
+- Initialization must be idempotent so loading the public script twice cannot duplicate listeners or UI.
+- Component-level initialization guards should prevent repeated setup when a component already exists.
+- Public JS must not target Hamel OS/admin selectors or internal application state.
+- Hardcoded business data in JS must remain limited to data required by the public interaction itself and must agree with the public content contract.
 
 ### Navigation
 
@@ -328,21 +290,33 @@ Keep:
 - active-page detection
 - `.menu-toggle--floating-widget` compatibility class
 
+The breakpoint constant in `main.js` must remain synchronized with the navigation breakpoint in `styles.css`.
+
 ### Service cards
 
 Home service cards may be enhanced by JavaScript, but their destination must remain functional and lead to the correct service section.
 
+Only the intended `.service-grid .service-card[href]` elements may be converted into interactive detail cards. Team cards or unrelated cards must not be captured by the service-card enhancement.
+
+Generated detail controls must use real buttons/links and valid ARIA relationships; do not turn an element containing interactive descendants into a competing nested button/link pattern.
+
+### Reveal
+
+Reveal-on-scroll is progressive enhancement only. If IntersectionObserver is unavailable or reduced motion is requested, content must remain visible rather than becoming inaccessible.
+
 ### Footer
 
-The mobile footer accordion remains part of the public interaction layer.
+The mobile footer accordion remains part of the public interaction layer. Desktop state must remain fully expanded.
 
 ### Gallery
 
-Existing lightbox behavior must not be broken accidentally.
+Existing lightbox behavior must not be broken accidentally. It must preserve keyboard access, Escape close, focus return, previous/next controls and touch navigation.
 
 ### Contact form
 
 Existing Supabase submission behavior is considered a real public function, not decorative UI.
+
+The public key is publishable/client-side by design; private service-role credentials must never be placed in `main.js` or public HTML.
 
 ## 9. Accessibility contract — KEEP
 
@@ -361,6 +335,8 @@ Maintain:
 - live contact-form status
 
 Accessibility attributes must not be removed during cleanup.
+
+Interactive components created by JavaScript must remain keyboard reachable and must expose valid accessible names and state relationships.
 
 ## 10. Images and branding — KEEP
 
@@ -423,6 +399,8 @@ The following are not part of the public website direction:
 - `site-refresh.css`
 - `seasonal-index.css`
 - `seasonal-index.js`
+- page-specific copies of shared public navigation logic
+- inline JavaScript for public shared behavior
 - arbitrary viewport-coordinate menu positioning
 - JavaScript-calculated layout coordinates for the header menu
 - redesigning Gallery as part of unrelated bug fixes
@@ -462,6 +440,18 @@ Inspect the affected:
 - deployment state
 - project guardrails
 
+When auditing JavaScript specifically, inspect for:
+
+- duplicated initialization/listeners
+- inline style injection
+- layout calculations that belong to CSS
+- selectors broader than the intended component
+- missing initialization guards
+- invalid/nested interactive semantics
+- missing keyboard/ARIA behavior
+- hardcoded values that conflict with the content contract
+- public JS references to OS/admin code
+
 ### Root cause first
 
 Do not solve a structural problem with another patch file.
@@ -469,6 +459,8 @@ Do not solve a structural problem with another patch file.
 ### Single-source principle
 
 If a required public CSS rule exists elsewhere, integrate it into `styles.css` and remove the redundant stylesheet after verification.
+
+If a shared interaction exists elsewhere, consolidate it into `js/main.js` and remove the duplicate after verification.
 
 ### Smallest safe correction
 
@@ -479,10 +471,12 @@ Prefer:
 - semantic HTML
 - state classes
 - centralized CSS
+- centralized public interaction logic
 
 Avoid:
 
 - duplicate stylesheets
+- duplicate JavaScript listeners
 - repeated `!important`
 - arbitrary coordinates
 - unrelated redesigns
@@ -503,15 +497,18 @@ Do not add or restore geographic restrictions, service limitations or other busi
 Before declaring a public change complete:
 
 1. verify source changes;
-2. verify all five public pages retain required dependencies;
-3. verify navigation structure is consistent;
-4. verify active-page state;
-5. verify CSS/JS breakpoint agreement;
-6. verify no internal OS dependency was introduced;
-7. deploy;
-8. confirm Vercel deployment is `READY`;
-9. verify the production public alias;
-10. fetch/check each public page and critical assets where possible.
+2. audit public HTML for duplicate/inline JavaScript and `style` attributes;
+3. audit `main.js` for duplicate initialization, listeners, CSS/layout responsibilities and accessibility regressions;
+4. verify all five public pages retain required dependencies;
+5. verify navigation structure is consistent;
+6. verify active-page state;
+7. verify CSS/JS breakpoint agreement;
+8. verify no internal OS dependency was introduced;
+9. deploy;
+10. confirm Vercel deployment is `READY`;
+11. verify the production public alias;
+12. fetch/check each public page and critical assets where possible;
+13. inspect runtime errors after deployment.
 
 A Git commit alone is not proof that production is healthy.
 
@@ -533,10 +530,29 @@ The public website is operational only when:
 - no unintended horizontal overflow is introduced
 - no rejected seasonal UI is present
 - the public stylesheet is centralized in `css/styles.css`
+- public shared interaction logic is centralized in `js/main.js`
 - production deployment is `READY`
 
-## 18. Current working principle
+## 18. Current audit note — September 15, 2026
 
-> **Public website first. Audit before modifying. Fix the root cause. Keep one authoritative stylesheet. Preserve approved functionality. Never fix one thing by breaking another. Verify in production.**
+A JavaScript hardening pass was applied to the public interaction layer.
+
+Verified source-level improvements:
+
+- public initialization is idempotent;
+- menu initialization is guarded against duplicate setup;
+- contact-form initialization and submission are guarded against duplicate/concurrent submission;
+- service-card enhancement is scoped to the service grid only;
+- service detail controls use explicit `aria-controls` relationships;
+- service cards are keyboard reachable without creating nested interactive controls;
+- no public JS layout coordinates are used for the header menu;
+- public interaction state is represented through CSS classes/ARIA rather than injected visual styles;
+- OS/admin JavaScript was not modified as part of this public-web pass.
+
+The repository also contains internal OS files that may contain inline styles/scripts; those are **not** public-web defects and must not be modified under this audit contract.
+
+## 19. Current working principle
+
+> **Public website first. Audit before modifying. Fix the root cause. Keep one authoritative stylesheet and one authoritative public interaction layer. Preserve approved functionality. Never fix one thing by breaking another. Verify in production.**
 
 This document is the persistent working contract for future public-web work. When a new regression is discovered, document the resulting rule here so the same mistake is not repeated.
