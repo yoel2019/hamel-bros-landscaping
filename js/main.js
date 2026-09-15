@@ -6,6 +6,7 @@ function initMenu(){
   const menu=document.querySelector('.navbar__menu');
   const inner=document.querySelector('.navbar__inner');
   if(!toggle||!menu||!inner)return;
+  toggle.classList.add('menu-toggle--floating-widget');
   menu.id=menu.id||'site-menu';
   toggle.setAttribute('aria-controls',menu.id);
   toggle.setAttribute('aria-expanded','false');
