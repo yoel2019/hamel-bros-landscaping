@@ -110,7 +110,7 @@ Keep the primary Metro West service-area presentation:
 - Wayland
 - Framingham
 
-Weekly lawn care must remain explicitly limited to **Natick and Wellesley**.
+Lawn care must be presented as part of the company's available maintenance services without an unsupported city-specific restriction.
 
 ### Company story
 
@@ -255,7 +255,7 @@ Keep four service groups:
 3. **Commercial & snow** — `#commercial`
 4. **Other landscape work** — `#other`
 
-Keep the existing service details and the explicit weekly-lawn-care limitation to Natick and Wellesley.
+Keep the existing service details. Do not impose an unsupported geographic restriction on lawn care.
 
 ### Gallery
 
@@ -275,7 +275,6 @@ Keep:
 - phone
 - fax
 - service area
-- weekly lawn-care limitation
 - estimate request form
 
 Required form fields:
@@ -429,6 +428,7 @@ The following are not part of the public website direction:
 - redesigning Gallery as part of unrelated bug fixes
 - hidden symbolism in the visual identity
 - unnecessary redesigns that replace the approved visual direction
+- unsupported geographic restrictions on public services
 
 ## 14. Public deployment boundary — KEEP STRICT
 
@@ -493,6 +493,10 @@ Avoid:
 **Do not fix one thing by breaking another.**
 
 Every change must preserve previously approved public behavior unless the project owner explicitly changes that requirement.
+
+### Content-source rule
+
+Do not add or restore geographic restrictions, service limitations or other business rules unless they are supported by an authoritative company source or explicitly approved by the project owner.
 
 ## 16. Verification protocol — KEEP
 
