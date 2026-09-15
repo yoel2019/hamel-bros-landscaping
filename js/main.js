@@ -100,33 +100,27 @@ function initViewCards() {
     detail.innerHTML = serviceDetails[title]
       ? `<ul>${serviceDetails[title].split(';').map((item) => `<li>${item}</li>`).join('')}</ul>`
       : '';
-    card.appendChild(detail);
-
-    const hint = document.createElement('span');
-    hint.className = 'view-card__hint';
-    hint.textContent = 'Tap to view details';
-    card.appendChild(hint);
 
     const action = document.createElement('a');
     action.className = 'view-card__action';
     action.href = destination;
     action.innerHTML = 'View service <span aria-hidden="true">→</span>';
     action.setAttribute('aria-label', `View ${title} service details`);
-    card.appendChild(action);
+    detail.appendChild(action);
+    card.appendChild(detail);
 
     const toggle = document.createElement('button');
     toggle.className = 'view-card__toggle';
     toggle.type = 'button';
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-controls', detailId);
-    toggle.textContent = 'Show details';
+    toggle.textContent = 'Show details →';
     card.appendChild(toggle);
 
     const setOpen = (openState) => {
       card.classList.toggle('is-open', openState);
       toggle.setAttribute('aria-expanded', String(openState));
-      toggle.textContent = openState ? 'Hide details' : 'Show details';
-      hint.textContent = openState ? 'Details expanded' : 'Tap to view details';
+      toggle.textContent = openState ? 'Hide details ↑' : 'Show details →';
     };
 
     toggle.addEventListener('click', (event) => {
