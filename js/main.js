@@ -74,7 +74,7 @@ function initViewCards() {
     'Other landscape work': 'Bobcat/backhoe work, shrub and stump removal, land clearing and re-grading.'
   };
 
-  document.querySelectorAll('.service-grid .service-card[href]').forEach((original) => {
+  document.querySelectorAll('.service-grid .service-card[href^="services.html#"]').forEach((original) => {
     if (original.dataset.viewCard) return;
     const summary = original.querySelector('p');
     if (!summary) return;
