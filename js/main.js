@@ -7,7 +7,8 @@ function initMenu() {
   const toggle = document.querySelector('.menu-toggle');
   const menu = document.querySelector('.navbar__menu');
   const inner = document.querySelector('.navbar__inner');
-  if (!toggle || !menu || !inner) return;
+  if (!toggle || !menu || !inner || toggle.dataset.menuReady) return;
+  toggle.dataset.menuReady = 'true';
 
   toggle.classList.add('menu-toggle--floating-widget');
   menu.id = menu.id || 'site-menu';
@@ -67,9 +68,9 @@ function initMenu() {
 
 function initViewCards() {
   const serviceDetails = {
-    'Maintenance': 'Spring & fall cleanups; edging & mulching; weeding; lawn care; fertilizing; lawn renovations; new lawn installations; aeration; de-thatching; seeding; trimming of trees and shrubs.',
+    Maintenance: 'Spring & fall cleanups; edging & mulching; weeding; lawn care; fertilizing; lawn renovations; new lawn installations; aeration; de-thatching; seeding; trimming of trees and shrubs.',
     'Planting & design': 'Installation of trees, shrubs and perennials, plus landscape design services tailored to the property.',
-    'Commercial': 'Complete grounds maintenance plus snow management, snowplowing, shoveling, melting/de-icing and snow removal.',
+    Commercial: 'Complete grounds maintenance plus snow management, snowplowing, shoveling, melting/de-icing and snow removal.',
     'Other landscape work': 'Bobcat/backhoe work, shrub and stump removal, land clearing and re-grading.'
   };
 
@@ -81,18 +82,21 @@ function initViewCards() {
     const destination = original.getAttribute('href');
     const card = document.createElement('article');
     [...original.attributes].forEach((attribute) => {
-      if (!['href'].includes(attribute.name)) card.setAttribute(attribute.name, attribute.value);
+      if (attribute.name !== 'href') card.setAttribute(attribute.name, attribute.value);
     });
     while (original.firstChild) card.appendChild(original.firstChild);
     original.replaceWith(card);
 
     card.dataset.viewCard = 'true';
     card.classList.add('view-card');
-    card.setAttribute('aria-expanded', 'false');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'group');
 
     const title = card.querySelector('h3, h2')?.textContent.trim() || '';
     const detail = document.createElement('div');
     detail.className = 'view-card__detail';
+    const detailId = `service-detail-${Math.random().toString(36).slice(2, 9)}`;
+    detail.id = detailId;
     detail.innerHTML = serviceDetails[title]
       ? `<ul>${serviceDetails[title].split(';').map((item) => `<li>${item}</li>`).join('')}</ul>`
       : '';
@@ -114,15 +118,15 @@ function initViewCards() {
     toggle.className = 'view-card__toggle';
     toggle.type = 'button';
     toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-controls', detailId);
     toggle.textContent = 'Show details';
     card.appendChild(toggle);
 
-    const setOpen = (open) => {
-      card.classList.toggle('is-open', open);
-      card.setAttribute('aria-expanded', String(open));
-      toggle.setAttribute('aria-expanded', String(open));
-      toggle.textContent = open ? 'Hide details' : 'Show details';
-      hint.textContent = open ? 'Details expanded' : 'Tap to view details';
+    const setOpen = (openState) => {
+      card.classList.toggle('is-open', openState);
+      toggle.setAttribute('aria-expanded', String(openState));
+      toggle.textContent = openState ? 'Hide details' : 'Show details';
+      hint.textContent = openState ? 'Details expanded' : 'Tap to view details';
     };
 
     toggle.addEventListener('click', (event) => {
@@ -305,7 +309,8 @@ function initGalleryLightbox() {
 async function submitContact(form) {
   const status = form.querySelector('.form-status');
   const button = form.querySelector('button[type="submit"]');
-  if (!status || !button) return;
+  if (!status || !button || form.dataset.submitting === 'true') return;
+  form.dataset.submitting = 'true';
 
   const original = button.textContent;
   status.className = 'form-status';
@@ -344,23 +349,34 @@ async function submitContact(form) {
   } finally {
     button.disabled = false;
     button.textContent = original;
+    form.dataset.submitting = 'false';
   }
 }
 
 function initContactForm() {
   const form = document.getElementById('contactForm');
-  if (!form) return;
+  if (!form || form.dataset.contactReady) return;
+  form.dataset.contactReady = 'true';
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     if (form.reportValidity()) submitContact(form);
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initPublicWebsite() {
+  if (document.documentElement.dataset.publicWebInitialized === 'true') return;
+  document.documentElement.dataset.publicWebInitialized = 'true';
+
   initMenu();
   initViewCards();
   initReveal();
   initFooterAccordion();
   initGalleryLightbox();
   initContactForm();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPublicWebsite, { once: true });
+} else {
+  initPublicWebsite();
+}
