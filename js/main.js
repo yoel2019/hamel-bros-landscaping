@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://jrgzenkcimujewydqflq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_scV6_vg_8Nmf3Y2p4hbPPw_SiJB-NZN';
-const MOBILE_NAV_BREAKPOINT = 1050;
+const MOBILE_NAV_BREAKPOINT = 960;
 const MOBILE_FOOTER_BREAKPOINT = 820;
 
 function initMenu() {
