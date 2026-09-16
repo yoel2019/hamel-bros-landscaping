@@ -264,3 +264,31 @@ button { color: inherit; }
   .gallery-lightbox__next { right: 0; }
   .gallery-lightbox__caption { left: 52px; right: 52px; bottom: 2px; }
 }
+
+/* Mobile-first refinement: keep the public Hero readable down to 320px. */
+@media (max-width: 380px) {
+  .container { width: min(calc(100% - 24px), var(--max)); }
+  .navbar__logo img { width: 124px; }
+  .hero__grid { gap: 22px; padding: 44px 0 48px; }
+  .hero__copy > .eyebrow:first-child { font-size: .66rem; letter-spacing: .08em; }
+  .hero__copy > .eyebrow:nth-child(2) { margin-top: 9px; padding-left: 9px; border-left: 2px solid var(--lime); font-size: .69rem; line-height: 1.35; letter-spacing: .08em; }
+  .hero h1 { font-size: clamp(2.28rem, 12vw, 3.15rem); line-height: .99; margin: 13px 0 16px; }
+  .hero__lead { font-size: .93rem; line-height: 1.55; margin-bottom: 21px; }
+  .hero__lead br { display: none; }
+  .hero__actions { gap: 8px; }
+  .hero__actions .btn { min-height: 48px; padding-inline: 14px; }
+  .hero__meta { margin-top: 17px; gap: 6px; }
+  .pill { flex: 1 1 calc(50% - 3px); text-align: center; padding: 6px 8px; font-size: .67rem; line-height: 1.25; }
+  .hero-media, .hero-media img { min-height: 300px; }
+  .hero-media { border-radius: 22px; }
+  .hero-media__label { left: 17px; right: 17px; bottom: 16px; }
+  .hero-media__label strong { font-size: 1.45rem; }
+  .hero-media__label span { font-size: .72rem; line-height: 1.4; }
+  .section { padding: 54px 0; }
+  .section-title, .section__head h2 { font-size: clamp(2rem, 10.5vw, 2.75rem); }
+  .info-card { padding: 20px; }
+  .info-card__number { font-size: 3.4rem; }
+  .service-card { padding: 20px; min-height: 0; }
+  .area-band__inner { padding: 21px 0; }
+  .cta { padding: 24px; border-radius: 22px; }
+}
