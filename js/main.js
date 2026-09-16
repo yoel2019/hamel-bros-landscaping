@@ -300,6 +300,19 @@ function initGalleryLightbox() {
   }, { passive: true });
 }
 
+function initImageFallbacks() {
+  document.querySelectorAll('img[data-fallback-src]').forEach((image) => {
+    if (image.dataset.fallbackReady) return;
+    image.dataset.fallbackReady = 'true';
+    image.addEventListener('error', () => {
+      const fallback = image.dataset.fallbackSrc;
+      if (!fallback || image.dataset.fallbackUsed) return;
+      image.dataset.fallbackUsed = 'true';
+      image.src = fallback;
+    });
+  });
+}
+
 async function submitContact(form) {
   const status = form.querySelector('.form-status');
   const button = form.querySelector('button[type="submit"]');
@@ -366,6 +379,7 @@ function initPublicWebsite() {
   initReveal();
   initFooterAccordion();
   initGalleryLightbox();
+  initImageFallbacks();
   initContactForm();
 }
 
