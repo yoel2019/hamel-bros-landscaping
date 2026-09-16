@@ -21,7 +21,6 @@
 - **Dirección:** P.O. Box 2069, Natick, MA 01760
 - **Teléfono:** 508-647-0003
 - **Área de servicio:** Metro West — Natick, Wellesley, Weston, Wayland, Framingham
-- **Lawn care limitado a:** Natick y Wellesley
 
 ### Equipo
 | Nombre | Rol |
