@@ -10,7 +10,6 @@ function initMenu() {
   if (!toggle || !menu || !inner || toggle.dataset.menuReady) return;
   toggle.dataset.menuReady = 'true';
 
-  toggle.classList.add('menu-toggle--floating-widget');
   menu.id = menu.id || 'site-menu';
   toggle.setAttribute('aria-controls', menu.id);
 
@@ -74,6 +73,8 @@ function initViewCards() {
     'Other landscape work': 'Bobcat/backhoe work, shrub and stump removal, land clearing and re-grading.'
   };
 
+  // Only service-detail cards become expandable. CTAs such as "Request an estimate"
+  // remain normal links and are never intercepted by the view-card behavior.
   document.querySelectorAll('.service-grid .service-card[href^="services.html#"]').forEach((original) => {
     if (original.dataset.viewCard) return;
     const summary = original.querySelector('p');
