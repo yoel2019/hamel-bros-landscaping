@@ -79,7 +79,6 @@ Keep:
 - P.O. Box 2069
 - Natick, MA 01760
 - Phone: 508-647-0003
-- Fax: 508-647-0203
 
 The phone number must remain actionable through `tel:5086470003`.
 
@@ -220,7 +219,6 @@ Keep:
 
 - mailing address
 - phone
-- fax
 - service area
 - estimate request form
 
