@@ -20,7 +20,6 @@
 - **Tipo:** Negocio familiar, comercial y residencial
 - **Dirección:** P.O. Box 2069, Natick, MA 01760
 - **Teléfono:** 508-647-0003
-- **Fax:** 508-647-0203
 - **Área de servicio:** Metro West — Natick, Wellesley, Weston, Wayland, Framingham
 - **Lawn care limitado a:** Natick y Wellesley
 
@@ -58,10 +57,10 @@
 - Land clearing and re-grading
 
 ### Testimonios reales
-- *"I can't say enough wonderful things about the Hamel brothers... they do a great job, they are prompt, personable, really keep track of their crew and their services are reasonably priced…you won't be disappointed!"* — B.S.
-- *"Their prices are reasonable and you will be amazed at how quickly they work, the quality of their work is excellent."* — J.G.
-- *"We gave them free reign and they took an outdated yard and made it look beautiful. It was completely redone in one weekend, they were great!"* — N.M.
-- *"We just had to send an extra thank you... The lawn is just what we always dreamed our yard would look like. We appreciate how hard your crews work and that they always leave everything spotless."* — S.Z.
+- *\"I can't say enough wonderful things about the Hamel brothers... they do a great job, they are prompt, personable, really keep track of their crew and their services are reasonably priced…you won't be disappointed!\"* — B.S.
+- *\"Their prices are reasonable and you will be amazed at how quickly they work, the quality of their work is excellent.\"* — J.G.
+- *\"We gave them free reign and they took an outdated yard and made it look beautiful. It was completely redone in one weekend, they were great!\"* — N.M.
+- *\"We just had to send an extra thank you... The lawn is just what we always dreamed our yard would look like. We appreciate how hard your crews work and that they always leave everything spotless.\"* — S.Z.
 
 ---
 
@@ -84,7 +83,7 @@
 
 ### Referencias de inspiración (3 diseños Dribbble)
 1. **Lawnx** — Estructura general, topbar, trust bar, blog cards, footer con Instagram grid
-2. **Lawnc Tree Services** — Hero con forma orgánica de hoja, proceso "how we work" en fondo oscuro, galería grid
+2. **Lawnc Tree Services** — Hero con forma orgánica de hoja, proceso \"how we work\" en fondo oscuro, galería grid
 3. **Lawnc Landscaping** — Hero con fondo muy oscuro y tags flotantes, cards de servicios, case studies, testimonios en grid
 
 ### Elementos de diseño clave
@@ -109,7 +108,7 @@
 
 ### Performance
 - **Lazy Loading** con Intersection Observer API
-- Imágenes con atributo `loading="lazy"`
+- Imágenes con atributo `loading=\"lazy\"`
 - Secciones con `opacity: 0` → animación fade+slide al entrar al viewport
 - Contenido pesado (galería) inyectado en DOM solo al llegar al scroll
 
