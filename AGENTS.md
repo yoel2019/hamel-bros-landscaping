@@ -13,3 +13,15 @@
 ## Working rule
 
 Before changing shared navigation CSS/JS, inspect the current implementation and the last agreed behavior. Make the smallest structural correction that fixes the root cause, then verify the resulting behavior before making another change.
+
+
+## Current responsive navigation contract — September 23, 2026
+
+The approved public navigation breakpoint is **960px**.
+
+- `js/main.js` uses `MOBILE_NAV_BREAKPOINT = 960`.
+- `css/styles.css` uses `@media (max-width:960px)` for the mobile navigation state.
+- CSS and JavaScript must remain synchronized at 960px.
+- Do not revert the breakpoint to 1050px based only on older documentation or historical commits.
+- When auditing breakpoint behavior, inspect the latest public commits and the current agreed behavior before reporting a change as a regression.
+- The 960px decision was part of the September 22, 2026 responsive-header cleanup.
