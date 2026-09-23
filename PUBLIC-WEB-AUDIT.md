@@ -122,7 +122,7 @@ The header is shared across all five public pages.
 
 ### Responsive/mobile
 
-- Hamburger appears at the agreed `1050px` breakpoint.
+- Hamburger appears at the agreed `960px` breakpoint.
 - Hamburger remains part of `.navbar__inner`.
 - Preserve `.menu-toggle--floating-widget` compatibility class in JavaScript unless explicitly instructed otherwise.
 - `.navbar__inner` is the positioned containing block for the dropdown.
@@ -151,7 +151,7 @@ Responsive behavior is treated as one system, not isolated breakpoint fixes.
 
 Current principal breakpoints:
 
-- `1050px` — navigation changes to hamburger mode
+- `960px` — navigation changes to hamburger mode
 - `780px` — compact/mobile page layout
 - `500px` — narrow-phone refinements
 
@@ -531,7 +531,15 @@ The public website is operational only when:
 - public shared interaction logic is centralized in `js/main.js`
 - production deployment is `READY`
 
-## 18. Current audit note — September 15, 2026
+## 18. Current audit note — September 23, 2026
+
+The responsive navigation breakpoint was intentionally aligned to **960px** on September 22, 2026. The current public implementation uses `960px` in both `js/main.js` (`MOBILE_NAV_BREAKPOINT`) and `css/styles.css` (`@media (max-width:960px)`). This is the current approved navigation breakpoint and must not be reverted to 1050px solely because of the older audit wording or historical implementation.
+
+The September 22 change was part of a responsive-header cleanup that also addressed duplicate phone/location presentation and simplified header spacing. Future audits must compare the current implementation against the latest agreed behavior and recent commit history before classifying a breakpoint change as a regression.
+
+The public-web audit must treat **CSS/JS synchronization at 960px** as the current contract.
+
+## 19. Current audit note — September 15, 2026
 
 A JavaScript hardening pass was applied to the public interaction layer.
 
@@ -549,7 +557,7 @@ Verified source-level improvements:
 
 The repository also contains internal OS files that may contain inline styles/scripts; those are **not** public-web defects and must not be modified under this audit contract.
 
-## 19. Current working principle
+## 20. Current working principle
 
 > **Public website first. Audit before modifying. Fix the root cause. Keep one authoritative stylesheet and one authoritative public interaction layer. Preserve approved functionality. Never fix one thing by breaking another. Verify in production.**
 
